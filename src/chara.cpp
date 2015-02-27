@@ -4,6 +4,40 @@
 // キャラクター同士で当たったときの押し出される力
 #define CHARA_HIT_PUSH_POWER            (12.0f)
 
+LifeBar::LifeBar(){
+	DamageColor = GetColor(255, 0, 0);    // ダメージバーの色
+	HPColor = GetColor(0, 0, 255);    // HPバーの色
+	HP = 100;
+}
+
+void LifeBar::updateHP(int point){
+	HP = point;
+}
+
+void LifeBar::draw(){
+	DrawBox(0, 450, 400, 550, DamageColor, TRUE);
+	DrawBox(0, 450, HP * 4, 550, HPColor, TRUE);
+}
+
+EnemyLifeBar::EnemyLifeBar():LifeBar(){
+	DamageColor = GetColor(255, 0, 0);    // ダメージバーの色
+	HPColor = GetColor(0, 0, 255);    // HPバーの色
+	HP = 100;
+	StartX = 0;
+	StartY = 0;
+}
+
+void EnemyLifeBar::updateHP(int point, int startX, int startY){
+	HP = point;
+	StartX = startX;
+	StartY = startY;
+}
+
+void EnemyLifeBar::draw(){
+	DrawBox(StartX, StartY, StartX + 40, StartY + 10, DamageColor, TRUE);
+	DrawBox(StartX, StartY, StartX + HP * 4/10, StartY + 10, HPColor, TRUE);
+}
+
 Chara::Chara(
 	char *modelPath,
 	char *neutralPath,
@@ -520,3 +554,4 @@ void Chara::CollisionOther(Chara* otherVec, int vecSize){
 		}
 	}
 }
+

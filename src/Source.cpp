@@ -25,6 +25,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	//プレイヤーオブジェクト生成
 	Player player = Player();
 	player.Position = VGet(500.0f, 0.0f, 0.0f);
+
 	//敵オブジェクト生成
 	Goblin goblin1 = Goblin(VGet(520.0f, 0.0f, 10.0f));
 
@@ -174,6 +175,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		camera.update(player.Position);
 
 		// ３Ｄモデルの描画
+		//ステージ描画
+		MV1DrawModel(stage);
+		
 		player.draw();
 		goblin1.draw();
 		goblin2.draw();
@@ -181,11 +185,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 		//MV1DrawModel(TestModelHandle);
 
-		//ステージ描画
-		MV1DrawModel(stage);
 
 		// 裏画面の内容を表画面に反映
 		ScreenFlip();
+		//プレイヤーのHPが０になったら終了
+		if (player.HP <= 0){
+			break;
+		}
 	}
 	player.terminateModel();
 	goblin1.terminateModel();

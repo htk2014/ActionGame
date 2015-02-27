@@ -19,6 +19,8 @@ Enemy::Enemy(
 	//MV1SetPosition(ModelHandle,Position);
 	ShortOption = TRUE;
 	DamageSound = "Data/sound/VO_dmg_01.wav";
+	HP = 100;
+	LBar = EnemyLifeBar::EnemyLifeBar();
 	Chara::animInit();
 }
 
@@ -36,7 +38,7 @@ void Enemy::endAnim(){
 		AttackFlag = FALSE;
 	}
 }
-
+/*
 void Enemy::update(Chara player,int attackKeyPressed){
 	int AttackHitted = isHitted(player);
 	//攻撃を受けていてまだダメージフラグが立っていなかったらダメージアニメーションの用意をする
@@ -54,12 +56,14 @@ void Enemy::update(Chara player,int attackKeyPressed){
 		Chara::update(Angle,player);
 	}
 }
+*/
 
 void Enemy::update(Chara player, int attackKeyPressed, Chara* otherVec, int vecSize){
 	int AttackHitted = isHitted(player);
 	//攻撃を受けていてまだダメージフラグが立っていなかったらダメージアニメーションの用意をする
 	if (AttackHitted && !DamageFlag){
 		initDamageAnim();
+		HP -= 20;
 	}
 	//攻撃を受けているか　または攻撃をしているか
 	if (DamageFlag || AttackFlag){
@@ -71,6 +75,20 @@ void Enemy::update(Chara player, int attackKeyPressed, Chara* otherVec, int vecS
 		Enemy::think();
 		onceUpdate(Angle, otherVec, vecSize);
 	}
+	// 体力ゲージを描画する座標を取得
+	VECTOR  ScreenPosition = ConvWorldPosToScreenPos(
+		VAdd(Position, VGet(0.0f,200.0f,0.0f)));
+
+	//画面の外なら何もしない
+	if (ScreenPosition.z < 0.0f || ScreenPosition.z > 1.0f)
+	{
+		return;
+	}
+	// 体力ゲージの描画
+    int startX = (int)(ScreenPosition.x - 50 / 2);
+	int startY = (int)(ScreenPosition.y - 50 / 2);
+	LBar.updateHP(HP, startX, startY);
+
 }
 
 void Enemy::onceUpdate(float angle, Chara* otherVec, int vecSize){
@@ -86,6 +104,7 @@ void Enemy::continuationUpdate(float continueActionAngle, Chara* otherVec, int v
 
 void Enemy::draw(){
 	Chara::draw();
+	LBar.draw();
 }
 
 void Enemy::terminateModel(){

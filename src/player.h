@@ -15,6 +15,7 @@ public:
 	int LastAttackKeyPressed;
 	float AttackTotalTimes[3];
 	float AttackAngle;
+	LifeBar LBar;
 
 	Player();
 	void changeAnim(int AnimFlag, int Anim);
@@ -28,6 +29,8 @@ public:
 	void update(KeyInfo KInfo, float angle, Chara* enemyVec, int vecSize);
 	void onceUpdate(float angle, Chara* enemyVec,int vecSize);
 	void continuationUpdate(float continueActionAngle, Chara* enemyVec, int vecSize);
+	void draw();
 
 };
+
 

@@ -41,6 +41,9 @@ Player::Player()
 	DamageSound = "Data/sound/dmg_byAxe_00.wav";
 	
 	AttackSphereSize = 1.0;
+	HP = 100;
+	//ライフバー
+	LBar = LifeBar::LifeBar();
 
 	Chara::animInit();
 }
@@ -121,7 +124,7 @@ void Player::setupAttack(KeyInfo KInfo, float angle){
 		AttackContinueFlag = TRUE;
 	}
 }
-
+/*
 void Player::update(KeyInfo KInfo, float angle,Enemy enemy){
 	int AttackHitted = isHitted(enemy);
 	setupAttack(KInfo, angle);
@@ -158,6 +161,7 @@ void Player::update(KeyInfo KInfo, float angle,Enemy enemy){
 	LastAttackKeyPressed = KInfo.AttackKeyPressed;
 
 }
+*/
 
 void Player::update(KeyInfo KInfo, float angle, Chara* enemyVec,int vecSize){
 	int AttackHitted = isHitted(enemyVec,vecSize);
@@ -165,6 +169,7 @@ void Player::update(KeyInfo KInfo, float angle, Chara* enemyVec,int vecSize){
 
 	if (AttackHitted && !DamageFlag){
 		initDamageAnim();
+		HP -= 10;
 	}
 
 	//攻撃フラグがたっているなら攻撃を始める。または攻撃を継続
@@ -190,7 +195,7 @@ void Player::update(KeyInfo KInfo, float angle, Chara* enemyVec,int vecSize){
 		onceUpdate(angle, enemyVec,vecSize);
 	}
 
-
+	LBar.updateHP(HP);
 	//連続攻撃用過去キー情報更新
 	LastAttackKeyPressed = KInfo.AttackKeyPressed;
 
@@ -207,4 +212,7 @@ void Player::continuationUpdate(float continueActionAngle, Chara* enemyVec, int 
 }
 
 
-
+void Player::draw(){
+	Chara::draw();
+	LBar.draw();
+}

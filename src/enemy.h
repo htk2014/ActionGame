@@ -11,6 +11,7 @@ public:
 	int AnimArray[3];
 	int AnimState;
 	float Angle;
+	EnemyLifeBar LBar;
 
 	Enemy(
 		char *modelPath,

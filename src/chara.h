@@ -16,6 +16,27 @@ struct CapInfo
 	VECTOR CapsulePosition2;
 };
 
+class LifeBar{
+public:
+	int HPColor;
+	int DamageColor;
+	int excist;
+	int HP;
+	LifeBar();
+	virtual void updateHP(int point);
+	void draw();
+};
+
+class EnemyLifeBar :public LifeBar{
+
+public:
+	int StartX;
+	int StartY;
+	EnemyLifeBar();
+	void updateHP(int point, int startX, int startY);
+	void draw();
+};
+
 class Chara{
 private:
 
@@ -31,6 +52,7 @@ public:
 	int DamageFlag;
 	int DamageAnim;
 	int ShortOption;
+	int HP;
 	char *HandFrameName;
 	char *DamageSound;
 	char *RootFrame;
