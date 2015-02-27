@@ -16,7 +16,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	//攻撃が敵にあたったか
 	int AttackHit = FALSE;
 	KeyInfo PlayerKeyInfo;
-	VECTOR Position = VGet(500.0f, 0.0f, 0.0f);
 
 	// ウインドウモードで起動
 	ChangeWindowMode(TRUE);
@@ -25,16 +24,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	//プレイヤー初期化用の構造体
 	//プレイヤーオブジェクト生成
 	Player player = Player();
-	player.Position = Position;
+	player.Position = VGet(500.0f, 0.0f, 0.0f);
 	//敵オブジェクト生成
-	Goblin goblin1 = Goblin({ 520, 0, 1 });
-	Human human = Human({ 520, 0, 1 });
-	//int TestModelHandle = MV1LoadModel("Data/stable/testModel3.mv1");
-	//int anim = MV1LoadModel("Data/stable/testModel1_anim.mv1");
-	  //AnimAttachIndex = MV1AttachAnim(ModelHandle, 0, anim, FALSE);
+	Goblin goblin1 = Goblin(VGet(520.0f, 0.0f, 10.0f));
+
+	Goblin goblin2 = Goblin(VGet(420.0f, 0.0f, -10.0f));
 
 	int stage = MV1LoadModel("Data/stage/Stage00.mv1");
-	MV1SetPosition(stage, { 0, 0, 0 });
+	MV1SetPosition(stage, VGet(0.0f, 0.0f, 0.0f));
 	//MV1SetPosition(TestModelHandle, { 0, 0, 0 });
 
 	// 向きを初期化
@@ -161,15 +158,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		player.update(PlayerKeyInfo, Angle, goblin1);
 		
 		goblin1.update(player, PlayerKeyInfo.AttackKeyPressed);
+		goblin2.update(player, PlayerKeyInfo.AttackKeyPressed);
 		
-		human.update(player, PlayerKeyInfo.AttackKeyPressed);
+		//human.update(player, PlayerKeyInfo.AttackKeyPressed);
 		//カメラ更新
 		camera.update(player.Position);
 
 		// ３Ｄモデルの描画
 		player.draw();
 		goblin1.draw();
-		human.draw();
+		goblin2.draw();
+		//human.draw();
 
 		//MV1DrawModel(TestModelHandle);
 
@@ -181,6 +180,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	}
 	player.terminateModel();
 	goblin1.terminateModel();
+	goblin2.terminateModel();
 	MV1DeleteModel(stage);
 	// ＤＸライブラリの後始末
 	DxLib_End();

@@ -12,7 +12,14 @@ public:
 	int AnimState;
 	float Angle;
 
-	Enemy(char *modelPath, char *neutralPath, char *rootPath, char *weaponPath, char *handFrameName, char *damageAnimName,VECTOR pos);
+	Enemy(
+		char *modelPath,
+		char *neutralPath,
+		char *rootPath,
+		char *weaponPath,
+		char *handFrameName, 
+		char *damageAnimName
+		);
 	//void initDamageAnim();
 	void initDamageAnim();
 	void endAnim();

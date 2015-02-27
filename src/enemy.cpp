@@ -12,11 +12,11 @@ Enemy::Enemy(
 	char *rootPath,
 	char *weaponPath,
 	char *handFrameName,
-	char *damageAnimName,
-	VECTOR pos)
+	char *damageAnimName)
 	:Chara(modelPath, neutralPath, rootPath, weaponPath, handFrameName, damageAnimName)
 {
-	MV1SetPosition(ModelHandle, pos);
+	//Position = pos;
+	//MV1SetPosition(ModelHandle,Position);
 	ShortOption = TRUE;
 	DamageSound = "Data/sound/VO_dmg_01.wav";
 	Chara::animInit();
@@ -96,8 +96,7 @@ Goblin::Goblin(VECTOR pos)
 	"root",
 	"Data/Weapon/Axe/Axe.mv1",
 	"hansocketR",
-	"Data/Goblin/Anim_Damage.mv1",
-	pos)
+	"Data/Goblin/Anim_Damage.mv1")
 {
 	WalkAnim = MV1LoadModel("Data/Goblin/Anim_Walk.mv1");
 	AttackAnim = MV1LoadModel("Data/Goblin/Anim_Attack1.mv1");
@@ -115,20 +114,22 @@ Goblin::Goblin(VECTOR pos)
 	DamageHitHeight = 80.0;
 	DamageHitCenterPosition = { 0.0, 90.0, 0.0 };
 	AttackSphereSize = 40.0;
+
+	Position = pos;
+	MV1SetPosition(ModelHandle, Position);
 }
 
 Human::Human(VECTOR pos)
 	:Enemy(
-	"Data/stable/testModel3.mv1",
-	"Data/stable/testModel3_Anim.mv1",
+	"Data/stable/testModel4.mv1",
+	"Data/stable/testModel4_Anim.mv1",
 	"models_root",
 	"Data/Weapon/Axe/Axe.mv1",
-	"models_root",
-	"Data/stable/testModel3_Anim.mv1",
-	pos)
+	"models_hand_ik_R",
+	"Data/stable/testModel4_Anim.mv1")
 {
-	WalkAnim = MV1LoadModel("Data/stable/testModel3_Anim.mv1");
-	AttackAnim = MV1LoadModel("Data/stable/testModel3_Anim.mv1");
+	WalkAnim = MV1LoadModel("Data/stable/testModel4_Anim.mv1");
+	AttackAnim = MV1LoadModel("Data/stable/testModel4_Anim.mv1");
 	//ランダムアクション用配列にアニメーションを入れる
 	AnimArray[0] = NeutralAnim;
 	AnimArray[1] = WalkAnim;
@@ -143,6 +144,11 @@ Human::Human(VECTOR pos)
 	DamageHitHeight = 80.0;
 	DamageHitCenterPosition = { 0.0, 90.0, 0.0 };
 	AttackSphereSize = 40.0;
+
+	Position = pos;
+	MV1SetPosition(ModelHandle, Position);
 }
+
+
 
 
