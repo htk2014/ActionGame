@@ -1,4 +1,4 @@
-#include <iostream>
+#include <vector>
 
 #include "DxLib.h"
 
@@ -29,6 +29,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	Goblin goblin1 = Goblin(VGet(520.0f, 0.0f, 10.0f));
 
 	Goblin goblin2 = Goblin(VGet(420.0f, 0.0f, -10.0f));
+
+	std::vector<Chara> enemyVec;
+	std::vector<Chara> otherVec;
 
 	int stage = MV1LoadModel("Data/stage/Stage00.mv1");
 	MV1SetPosition(stage, VGet(0.0f, 0.0f, 0.0f));
@@ -155,10 +158,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		}
 
 		//モデル更新
-		player.update(PlayerKeyInfo, Angle, goblin1);
+		//player.update(PlayerKeyInfo, Angle, goblin1);
+		enemyVec = { goblin1, goblin2 };
+		player.update(PlayerKeyInfo, Angle, enemyVec.data(),enemyVec.size());
 		
-		goblin1.update(player, PlayerKeyInfo.AttackKeyPressed);
-		goblin2.update(player, PlayerKeyInfo.AttackKeyPressed);
+		//goblin1.update(player, PlayerKeyInfo.AttackKeyPressed);
+		//goblin2.update(player, PlayerKeyInfo.AttackKeyPressed);
+		otherVec = { goblin2, player };
+		goblin1.update(player, PlayerKeyInfo.AttackKeyPressed,otherVec.data(),otherVec.size());
+		otherVec = { goblin1, player };
+		goblin2.update(player, PlayerKeyInfo.AttackKeyPressed,otherVec.data(), otherVec.size());
 		
 		//human.update(player, PlayerKeyInfo.AttackKeyPressed);
 		//カメラ更新

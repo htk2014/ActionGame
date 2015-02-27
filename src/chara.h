@@ -17,6 +17,8 @@ struct CapInfo
 };
 
 class Chara{
+private:
+
 public:
 	int ModelHandle;
 	int WeaponHandle;
@@ -57,10 +59,14 @@ public:
 	void continueAnim();
 	//攻撃アニメーションやダメージアニメーションなど続けて呼ばれるアニメーションのためのアップデート
 	//continueActionAngleは、continuationAnimが呼ばれている間変化しない値を想定　例 player.AttackAngleなど
-	void updatePosition(float angle, VECTOR moveVector,Chara other);
-	void continuationUpdate(float continueActionAngle,Chara other);
-	int isHitted(Chara other);
+	void updatePosition(float angle, VECTOR moveVector, Chara other);
+	void updatePosition(float angle, Chara* otherVec, int vecSize);
+	void continuationUpdate(float continueActionAngle, Chara other);
+	void continuationUpdate(float continueActionAngle);
 	void update(float angle,Chara other);
+	void onceUpdate(float angle);
+	int isHitted(Chara other);
+	int isHitted(Chara* otherVec, int vecSize);
 	void draw();
 	void terminateModel();
 	int attackedkJudge(Chara other);
@@ -69,6 +75,7 @@ public:
 	void initDamageAnim();
 	//int CollisionOther(Chara other);
 	void CollisionOther(Chara other);
+	void CollisionOther(Chara* otherVec, int vecSize);
 };
 
 #endif

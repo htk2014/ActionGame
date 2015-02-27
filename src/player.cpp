@@ -159,5 +159,52 @@ void Player::update(KeyInfo KInfo, float angle,Enemy enemy){
 
 }
 
+void Player::update(KeyInfo KInfo, float angle, Chara* enemyVec,int vecSize){
+	int AttackHitted = isHitted(enemyVec,vecSize);
+	setupAttack(KInfo, angle);
+
+	if (AttackHitted && !DamageFlag){
+		initDamageAnim();
+	}
+
+	//攻撃フラグがたっているなら攻撃を始める。または攻撃を継続
+	if (AttackFlag || DamageFlag){
+		//連続攻撃フラグが立っているなら次のアニメーションに移行
+		if (!LastAttackKeyPressed && KInfo.AttackKeyPressed && AttackFlag){
+			//連続攻撃がまだ続けられるか？
+			if (AttackContinueFlag && AttackContinueNum < 2){
+				//アニメーション変更
+				setupContinueAttack();
+			}
+		}
+		continuationUpdate(AttackAngle, enemyVec,vecSize);
+
+	}
+	else{
+		//移動フラグに変更があるか？
+		if (RunFlag != KInfo.MoveKeyPressed)
+		{
+			RunFlag = KInfo.MoveKeyPressed;
+			changeAnim(RunFlag, RunAnim);
+		}
+		onceUpdate(angle, enemyVec,vecSize);
+	}
+
+
+	//連続攻撃用過去キー情報更新
+	LastAttackKeyPressed = KInfo.AttackKeyPressed;
+
+}
+
+void Player::onceUpdate(float angle,Chara* enemyVec,int vecSize){
+	Chara::onceUpdate(angle);
+	Chara::updatePosition(angle, enemyVec, vecSize);
+}
+
+void Player::continuationUpdate(float continueActionAngle, Chara* enemyVec, int vecSize){
+	Chara::continuationUpdate(continueActionAngle);
+	Chara::updatePosition(continueActionAngle, enemyVec, vecSize);
+}
+
 
 

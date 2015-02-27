@@ -24,6 +24,10 @@ public:
 	void setupContinueAttack();
 	void endAnim();
 	void setupAttack(KeyInfo KInfo, float angle);
-	void update(KeyInfo KInfo, float angle,Enemy enemy);
+	void update(KeyInfo KInfo, float angle, Enemy enemy);
+	void update(KeyInfo KInfo, float angle, Chara* enemyVec, int vecSize);
+	void onceUpdate(float angle, Chara* enemyVec,int vecSize);
+	void continuationUpdate(float continueActionAngle, Chara* enemyVec, int vecSize);
+
 };
 

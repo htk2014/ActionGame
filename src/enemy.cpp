@@ -55,6 +55,35 @@ void Enemy::update(Chara player,int attackKeyPressed){
 	}
 }
 
+void Enemy::update(Chara player, int attackKeyPressed, Chara* otherVec, int vecSize){
+	int AttackHitted = isHitted(player);
+	//攻撃を受けていてまだダメージフラグが立っていなかったらダメージアニメーションの用意をする
+	if (AttackHitted && !DamageFlag){
+		initDamageAnim();
+	}
+	//攻撃を受けているか　または攻撃をしているか
+	if (DamageFlag || AttackFlag){
+		//ダメージアニメーションを始める。または継続
+		continuationUpdate(Angle, otherVec,vecSize);
+	}
+	else{
+		//受けていなかったらランダムでアクション
+		Enemy::think();
+		onceUpdate(Angle, otherVec, vecSize);
+	}
+}
+
+void Enemy::onceUpdate(float angle, Chara* otherVec, int vecSize){
+	Chara::onceUpdate(angle);
+	Chara::updatePosition(angle, otherVec, vecSize);
+}
+
+void Enemy::continuationUpdate(float continueActionAngle, Chara* otherVec, int vecSize){
+	Chara::continuationUpdate(continueActionAngle);
+	Chara::updatePosition(continueActionAngle, otherVec, vecSize);
+}
+
+
 void Enemy::draw(){
 	Chara::draw();
 }
@@ -88,6 +117,8 @@ void Enemy::think(){
 		changeAnim(AnimState);
 	}
 }
+
+
 
 Goblin::Goblin(VECTOR pos) 
 	:Enemy(
@@ -148,6 +179,7 @@ Human::Human(VECTOR pos)
 	Position = pos;
 	MV1SetPosition(ModelHandle, Position);
 }
+
 
 
 

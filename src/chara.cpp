@@ -25,6 +25,7 @@ Chara::Chara(
 	CharaHitWidth = 60.0f;
 	CharaHitHeight = 60.0f;
 	CharaHitCenterPosition = { 0.0f, 90.0f, 0.0f };
+
 }
 
 void Chara::changeAnim(int anim){
@@ -142,6 +143,34 @@ void Chara::updatePosition(float angle, VECTOR moveVector, Chara other){
 	MV1SetRotationXYZ(ModelHandle, VGet(0.0f, angle / 180.0f * DX_PI_F, 0.0f));
 }
 
+void Chara::updatePosition(float angle, Chara* otherArray,int vecSize){
+	//変更する前のキャラの座標を保存しておく
+	VECTOR tempPos = Position;
+
+	//攻撃処理は除く
+	if (!AttackFlag){
+		// キャラクターの向きに合わせて移動ベクトルの角度を回転させて、キャラクターモデルの座標に加算
+		SinParam = sin(-angle / 180.0f * DX_PI_F);
+		CosParam = cos(-angle / 180.0f * DX_PI_F);
+		Position.x += MoveVector.x * CosParam - MoveVector.z * SinParam;
+		Position.z += MoveVector.x * SinParam + MoveVector.z * CosParam;
+	}
+
+	//衝突処理
+	CollisionOther(otherArray, vecSize);
+
+	// ３Ｄモデルに新しい座標をセット
+	MV1SetPosition(ModelHandle, Position);
+
+	if (WeaponHandle){
+		//武器の位置を更新
+		SetModelFramePosition(ModelHandle, HandFrameName, WeaponHandle);
+	}
+
+	// 新しい向きをセット
+	MV1SetRotationXYZ(ModelHandle, VGet(0.0f, angle / 180.0f * DX_PI_F, 0.0f));
+}
+
 void Chara::continuationUpdate(float continueActionAngle, Chara other){
 	// アニメーション時間を進める前の『アニメーションで移動をしているフレームの座標』を取得しておく
 	PrevPosition = MV1GetAttachAnimFrameLocalPosition(ModelHandle, AnimAttachIndex, MoveAnimFrameIndex);
@@ -152,6 +181,7 @@ void Chara::continuationUpdate(float continueActionAngle, Chara other){
 	// アニメーション再生時間がアニメーションの総時間を越えているかどうかで処理を分岐
 	if (AnimNowTime >= AnimTotalTime)
 	{
+		//この処理がが子クラスによって違う
 		endAnim();
 	}
 	else
@@ -161,6 +191,25 @@ void Chara::continuationUpdate(float continueActionAngle, Chara other){
 
 	updatePosition(continueActionAngle, MoveVector, other);
 
+}
+
+void Chara::continuationUpdate(float continueActionAngle){
+	// アニメーション時間を進める前の『アニメーションで移動をしているフレームの座標』を取得しておく
+	PrevPosition = MV1GetAttachAnimFrameLocalPosition(ModelHandle, AnimAttachIndex, MoveAnimFrameIndex);
+
+	// アニメーション再生時間を進める
+	AnimNowTime += 0.6f;
+
+	// アニメーション再生時間がアニメーションの総時間を越えているかどうかで処理を分岐
+	if (AnimNowTime >= AnimTotalTime)
+	{
+		//この処理がが子クラスによって違う
+		endAnim();
+	}
+	else
+	{
+		continueAnim();
+	}
 }
 
 void Chara::update(float angle, Chara other){
@@ -201,9 +250,46 @@ void Chara::update(float angle, Chara other){
 		MoveVector = VSub(NowPosition, PrevPosition);
 	}
 	updatePosition(angle, MoveVector, other);
-
-
 }
+void Chara::onceUpdate(float angle){
+	// アニメーション時間を進める前の『アニメーションで移動をしているフレームの座標』を取得しておく
+	PrevPosition = MV1GetAttachAnimFrameLocalPosition(ModelHandle, AnimAttachIndex, MoveAnimFrameIndex);
+
+	// アニメーション再生時間を進める
+	AnimNowTime += 0.6f;
+
+	// アニメーション再生時間がアニメーションの総時間を越えているかどうかで処理を分岐
+	if (AnimNowTime >= AnimTotalTime)
+	{
+		// 超えている場合は、まず『アニメーション再生時間を進める前の「アニメーションで移動しているフレームの座標」』と、
+		// 『アニメーションの終端での「アニメーションで移動しているフレームの座標」』との差分を移動ベクトルとする
+		MV1SetAttachAnimTime(ModelHandle, AnimAttachIndex, AnimTotalTime);
+		NowPosition = MV1GetAttachAnimFrameLocalPosition(ModelHandle, AnimAttachIndex, MoveAnimFrameIndex);
+		MoveVector = VSub(NowPosition, PrevPosition);
+
+		// 新しいアニメーション再生時間は、アニメーション再生時間からアニメーション総時間を引いたもの
+		AnimNowTime -= AnimTotalTime;
+
+		// 次に『新しいアニメーション再生時間での「アニメーションで移動をしているフレームの座標」と
+		// 『アニメーション再生時間０での「アニメーションで移動しているフレームの座標」』との差分を移動ベクトルに加算する
+		MV1SetAttachAnimTime(ModelHandle, AnimAttachIndex, 0.0f);
+		PrevPosition = MV1GetAttachAnimFrameLocalPosition(ModelHandle, AnimAttachIndex, MoveAnimFrameIndex);
+		MV1SetAttachAnimTime(ModelHandle, AnimAttachIndex, AnimNowTime);
+		NowPosition = MV1GetAttachAnimFrameLocalPosition(ModelHandle, AnimAttachIndex, MoveAnimFrameIndex);
+		MoveVector = VAdd(MoveVector, VSub(NowPosition, PrevPosition));
+	}
+	else
+	{
+		// 新しいアニメーション再生時間をセット
+		MV1SetAttachAnimTime(ModelHandle, AnimAttachIndex, AnimNowTime);
+
+		// 『新しいアニメーション再生時間での「アニメーションで移動をしているフレームの座標」』と、
+		// 『アニメーション再生時間を進める前の「アニメーションで移動をしているフレームの座標」』との差分を移動ベクトルとする
+		NowPosition = MV1GetAttachAnimFrameLocalPosition(ModelHandle, AnimAttachIndex, MoveAnimFrameIndex);
+		MoveVector = VSub(NowPosition, PrevPosition);
+	}
+}
+
 
 void Chara::draw(){
 	MV1DrawModel(ModelHandle);
@@ -299,6 +385,20 @@ int Chara::isHitted(Chara other){
 
 }
 
+//攻撃を受けているか
+int Chara::isHitted(Chara* otherVec, int vecSize){
+	int HitResult = FALSE;
+	for (int i=0; i < vecSize; i++){
+		Chara other = otherVec[i];
+		//攻撃を受けていたら即座にTRUEを返す
+		if (attackedkJudge(other) && other.AttackFlag){
+			HitResult = TRUE;
+			break;
+		}
+	}
+	return HitResult;
+}
+
 // キャラ同士の当たり判定処理を行う
 void Chara::CollisionOther(Chara other){
 
@@ -356,4 +456,67 @@ void Chara::CollisionOther(Chara other){
 		}
 	}
 
+}
+//player用
+void Chara::CollisionOther(Chara* otherVec, int vecSize){
+
+	VECTOR otherToThisVec;
+	VECTOR PushVec;
+	float  Distance;
+	float  TotalWidth;
+	float  TempY;
+	CapInfo thisCInfo;
+	CapInfo otherCInfo;
+
+	for (int i = 0; i < vecSize; i++){
+
+		Chara other = otherVec[i];
+
+		// キャラ同士の幅の合計を算出
+		TotalWidth =
+			CharaHitWidth + other.CharaHitWidth;
+
+		// 各キャラの当たり判定用のカプセル座標を算出
+		thisCInfo = getHitCapInfo();
+		otherCInfo = other.getHitCapInfo();
+
+		// 当たっているか判定
+		if (HitCheck_Capsule_Capsule(
+			thisCInfo.CapsulePosition1, thisCInfo.CapsulePosition2,
+			CharaHitWidth,
+			otherCInfo.CapsulePosition1, otherCInfo.CapsulePosition2,
+			other.CharaHitWidth) == TRUE)
+		{
+
+			// 当たっていたら thisが otherから離れる処理をする
+
+			// otherからthisへのベクトルを算出
+			otherToThisVec = VSub(Position, other.Position);
+
+			// Ｙ軸は見ない
+			otherToThisVec.y = 0.0f;
+
+			// 二人の距離を算出
+			Distance = VSize(otherToThisVec);
+
+			// otherから this へのベクトルを正規化
+			PushVec = VScale(otherToThisVec, 1.0f / Distance);
+
+			// 押し出す距離を算出、もし二人の距離から二人の大きさを引いた値に押し出し力を
+			// 足して離れてしまう場合は、ぴったりくっつく距離に移動する
+			if (Distance - TotalWidth + CHARA_HIT_PUSH_POWER > 0.0f)
+			{
+				TempY = Position.y;
+				Position = VAdd(other.Position, VScale(PushVec, TotalWidth));
+
+				// Ｙ座標は変化させない
+				Position.y = TempY;
+			}
+			else
+			{
+				// 押し出し
+				Position = VAdd(Position, VScale(PushVec, CHARA_HIT_PUSH_POWER));
+			}
+		}
+	}
 }

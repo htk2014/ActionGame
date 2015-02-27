@@ -23,10 +23,14 @@ public:
 	//void initDamageAnim();
 	void initDamageAnim();
 	void endAnim();
+	void update(Chara player, int attackKeyPressed, Chara* otherVec, int vecSize);
 	void update(Chara player, int attackKeyPressed);
+	void onceUpdate(float angle, Chara* otherVec, int vecSize);
+	void continuationUpdate(float continueActionAngle, Chara* otherVec, int vecSize);
 	void draw();
 	void terminateModel();
 	void think();
+	VECTOR getPostion();
 };
 
 class Goblin :public Enemy{
