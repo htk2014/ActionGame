@@ -1,7 +1,17 @@
 #include "math.h"
 #include "chara.h"
 
-Chara::Chara(char *modelPath, char *neutralPath, char *rootPath, char *weaponPath, char *handFrameName,char *damageAnimName){
+// キャラクター同士で当たったときの押し出される力
+#define CHARA_HIT_PUSH_POWER            (12.0f)
+
+Chara::Chara(
+	char *modelPath,
+	char *neutralPath,
+	char *rootPath,
+	char *weaponPath,
+	char *handFrameName,
+	char *damageAnimName)
+{
 	ModelHandle = MV1LoadModel(modelPath);
 	WeaponHandle = MV1LoadModel(weaponPath);
 	NeutralAnim = MV1LoadModel(neutralPath);
@@ -11,6 +21,10 @@ Chara::Chara(char *modelPath, char *neutralPath, char *rootPath, char *weaponPat
 	HandFrameIndex = MV1SearchFrame(ModelHandle, handFrameName);
 	DamageFlag = FALSE;
 	AttackFlag = FALSE;
+
+	CharaHitWidth = 60.0f;
+	CharaHitHeight = 60.0f;
+	CharaHitCenterPosition = { 0.0f, 90.0f, 0.0f };
 }
 
 void Chara::changeAnim(int anim){
@@ -28,7 +42,7 @@ void Chara::changeAnim(int anim){
 	MV1SetAttachAnimTime(ModelHandle, AnimAttachIndex, AnimNowTime);
 }
 
-void Chara::changeAnim(int anim,int shortFlag){
+void Chara::changeAnim(int anim, int shortFlag){
 	// 今までアタッチしていたアニメーションをデタッチ
 	MV1DetachAnim(ModelHandle, AnimAttachIndex);
 
@@ -37,8 +51,9 @@ void Chara::changeAnim(int anim,int shortFlag){
 
 	// アニメーションの総時間の半分を取得
 	if (shortFlag){
-		AnimTotalTime = MV1GetAttachAnimTotalTime(ModelHandle, AnimAttachIndex)/2;
-	} else{
+		AnimTotalTime = MV1GetAttachAnimTotalTime(ModelHandle, AnimAttachIndex) / 2;
+	}
+	else{
 		AnimTotalTime = MV1GetAttachAnimTotalTime(ModelHandle, AnimAttachIndex);
 	}
 	// アニメーション再生時間を初期化
@@ -99,44 +114,21 @@ void Chara::continueAnim(){
 
 }
 
-void Chara::updatePosition(float angle, VECTOR moveVector,Chara other){
+void Chara::updatePosition(float angle, VECTOR moveVector, Chara other){
 	//変更する前のキャラの座標を保存しておく
 	VECTOR tempPos = Position;
 
-	// キャラクターの向きに合わせて移動ベクトルの角度を回転させて、キャラクターモデルの座標に加算
-	SinParam = sin(-angle / 180.0f * DX_PI_F);
-	CosParam = cos(-angle / 180.0f * DX_PI_F);
-	Position.x += MoveVector.x * CosParam - MoveVector.z * SinParam;
-	Position.z += MoveVector.x * SinParam + MoveVector.z * CosParam;
-
-	int ColliWithOther = CollisionOther(other);
-	//他のキャラと衝突しているなら、座標を元に戻す
-	if (ColliWithOther){
-		Position = tempPos;
-		Position.x -= (MoveVector.x * CosParam - MoveVector.z * SinParam)/5;
-		Position.z -= (MoveVector.x * SinParam + MoveVector.z * CosParam)/5;
-	}
-	// ３Ｄモデルに新しい座標をセット
-	MV1SetPosition(ModelHandle, Position);
-
-	if (WeaponHandle){
-		//武器の位置を更新
-		SetModelFramePosition(ModelHandle, HandFrameName, WeaponHandle);
+	//攻撃処理は除く
+	if (!AttackFlag){
+		// キャラクターの向きに合わせて移動ベクトルの角度を回転させて、キャラクターモデルの座標に加算
+		SinParam = sin(-angle / 180.0f * DX_PI_F);
+		CosParam = cos(-angle / 180.0f * DX_PI_F);
+		Position.x += MoveVector.x * CosParam - MoveVector.z * SinParam;
+		Position.z += MoveVector.x * SinParam + MoveVector.z * CosParam;
 	}
 
-	// 新しい向きをセット
-	MV1SetRotationXYZ(ModelHandle, VGet(0.0f, angle / 180.0f * DX_PI_F, 0.0f));
-}
-/*
-void Chara::updatePosition(float angle, VECTOR moveVector){
-	//変更する前のキャラの座標を保存しておく
-	VECTOR tempPos = Position;
-
-	// キャラクターの向きに合わせて移動ベクトルの角度を回転させて、キャラクターモデルの座標に加算
-	SinParam = sin(-angle / 180.0f * DX_PI_F);
-	CosParam = cos(-angle / 180.0f * DX_PI_F);
-	Position.x += MoveVector.x * CosParam - MoveVector.z * SinParam;
-	Position.z += MoveVector.x * SinParam + MoveVector.z * CosParam;
+	//衝突処理
+	CollisionOther(other);
 
 	// ３Ｄモデルに新しい座標をセット
 	MV1SetPosition(ModelHandle, Position);
@@ -149,7 +141,6 @@ void Chara::updatePosition(float angle, VECTOR moveVector){
 	// 新しい向きをセット
 	MV1SetRotationXYZ(ModelHandle, VGet(0.0f, angle / 180.0f * DX_PI_F, 0.0f));
 }
-*/
 
 void Chara::continuationUpdate(float continueActionAngle, Chara other){
 	// アニメーション時間を進める前の『アニメーションで移動をしているフレームの座標』を取得しておく
@@ -168,11 +159,11 @@ void Chara::continuationUpdate(float continueActionAngle, Chara other){
 		continueAnim();
 	}
 
-	updatePosition(continueActionAngle, MoveVector,other);
+	updatePosition(continueActionAngle, MoveVector, other);
 
 }
 
-void Chara::update(float angle,Chara other){
+void Chara::update(float angle, Chara other){
 	// アニメーション時間を進める前の『アニメーションで移動をしているフレームの座標』を取得しておく
 	PrevPosition = MV1GetAttachAnimFrameLocalPosition(ModelHandle, AnimAttachIndex, MoveAnimFrameIndex);
 
@@ -216,10 +207,10 @@ void Chara::update(float angle,Chara other){
 
 void Chara::draw(){
 	MV1DrawModel(ModelHandle);
-	CapInfo cap = getCapInfo();
+	CapInfo cap = getHitCapInfo();
 	//カプセル描画
-	DrawCapsule3D(cap.CapsulePosition1, cap.CapsulePosition2,DamageHitWidth, 8, GetColor(0, 255, 0), GetColor(255, 255, 255), FALSE);
-	
+	DrawCapsule3D(cap.CapsulePosition1, cap.CapsulePosition2, DamageHitWidth, 8, GetColor(0, 255, 0), GetColor(255, 255, 255), FALSE);
+
 	if (WeaponHandle){
 		MV1DrawModel(WeaponHandle);
 	}
@@ -230,40 +221,49 @@ void Chara::terminateModel(){
 	MV1DeleteModel(ModelHandle);
 }
 
-int Chara::attackJudge(CapInfo Cinfo, float EnemyHitWidth){
+int Chara::attackedkJudge(Chara other){
 	int HitResult = FALSE;
 	VECTOR nearPos[2];
 	VECTOR farPos[2];
-
+	//敵の攻撃座標計算
 	MATRIX AttackPosMatrix =
-		MV1GetFrameLocalWorldMatrix(ModelHandle, HandFrameIndex);
+		MV1GetFrameLocalWorldMatrix(other.ModelHandle, other.HandFrameIndex);
 
 	// 攻撃判定で使用する２点を算出
 	nearPos[0] = VTransform(VGet(0.0f, 0.0f, 0.0f), AttackPosMatrix);
-	farPos[0] = VTransform(EndLocalPosition, AttackPosMatrix);
+	farPos[0] = VTransform(other.EndLocalPosition, AttackPosMatrix);
 
-	HitResult = HitCheck_Capsule_Triangle(
-		Cinfo.CapsulePosition1,
-		Cinfo.CapsulePosition2,
-		EnemyHitWidth,
+	//自分の攻撃当たり判定用カプセル情報を取得
+	CapInfo selfCinfo = getDamageCapInfo();
+
+	//他のキャラの攻撃と自分のカプセルが衝突したか
+	HitResult =
+		HitCheck_Capsule_Capsule(
+		selfCinfo.CapsulePosition1,
+		selfCinfo.CapsulePosition2,
+		DamageHitWidth,
 		nearPos[0],
-		farPos[1],
-		nearPos[0]
+		nearPos[1],
+		other.AttackSphereSize
 		);
-	if (!HitResult){
-		HitResult = HitCheck_Capsule_Triangle(
-			Cinfo.CapsulePosition1,
-			Cinfo.CapsulePosition2,
-			EnemyHitWidth,
-			nearPos[0],
-			farPos[1],
-			nearPos[1]
-			);
-	}
+
 	return HitResult;
 }
 
-CapInfo Chara::getCapInfo(){
+CapInfo Chara::getHitCapInfo(){
+	VECTOR CapsulePosition1;
+	VECTOR CapsulePosition2;
+
+	CapsulePosition1 =
+		CapsulePosition2 = VAdd(Position, CharaHitCenterPosition);
+
+	CapsulePosition1.y -= CharaHitHeight / 2.0f;
+	CapsulePosition2.y += CharaHitHeight / 2.0f;
+
+	return{ CapsulePosition1, CapsulePosition2 };
+}
+
+CapInfo Chara::getDamageCapInfo(){
 
 	VECTOR CapsulePosition1;
 	VECTOR CapsulePosition2;
@@ -281,46 +281,79 @@ void Chara::initDamageAnim(){
 	//攻撃を受けているフラグを立てる
 	DamageFlag = TRUE;
 	//ダメージアニメーションに変更(ShortOptionがTRUEならダメージアニメの通常の半分の時間に　理由:まんまだと無敵時間が長すぎるから）
-	Chara::changeAnim(DamageAnim,ShortOption);
+	Chara::changeAnim(DamageAnim, ShortOption);
 	//ダメージ用の音楽を流す
 	PlaySoundFile(DamageSound, DX_PLAYTYPE_BACK);
 }
-//
-int Chara::isHitted(Chara chara, int enemyAttaking){
-	CapInfo Cinfo = getCapInfo();
-	int HitResult = chara.attackJudge(Cinfo, DamageHitWidth);
-	
-	if (HitResult && enemyAttaking){
+
+//攻撃を受けているか
+int Chara::isHitted(Chara other){
+	int HitResult = attackedkJudge(other);
+
+	if (HitResult && other.AttackFlag){
 		return TRUE;
 	}
 	else{
 		return FALSE;
 	}
-	
+
 }
 
-int Chara::CollisionOther(Chara other){
-	//他のキャラのカプセル情報
-	CapInfo otherCinfo = other.getCapInfo();
-	//キャラ同士の当たり判定
-	MV1SetupCollInfo(ModelHandle, -1, 8, 8, 8);
-	//カプセルの大きさ調整
-	otherCinfo.CapsulePosition1.x = otherCinfo.CapsulePosition1.x / 100;
-	otherCinfo.CapsulePosition1.y = otherCinfo.CapsulePosition1.y / 100;
-	otherCinfo.CapsulePosition2.x = otherCinfo.CapsulePosition2.x / 100;
-	otherCinfo.CapsulePosition2.y = otherCinfo.CapsulePosition2.y / 100;
-	//他のキャラのカプセルと自分が衝突したか
-	auto HitPolyDim = MV1CollCheck_Capsule(ModelHandle, -1, otherCinfo.CapsulePosition1, otherCinfo.CapsulePosition1, 100.0f);
-	
+// キャラ同士の当たり判定処理を行う
+void Chara::CollisionOther(Chara other){
 
-	//当たり判定用構造体の後始末
-	MV1CollResultPolyDimTerminate(HitPolyDim);
+	VECTOR otherToThisVec;
+	VECTOR PushVec;
+	float  Distance;
+	float  TotalWidth;
+	float  TempY;
+	CapInfo thisCInfo;
+	CapInfo otherCInfo;
 
-	//HitPolyDim.HitNumが１以上なら衝突している
-	if (HitPolyDim.HitNum >= 1){
-		return TRUE;
+	// キャラ同士の幅の合計を算出
+	TotalWidth =
+		CharaHitWidth + other.CharaHitWidth;
+
+	// 各キャラの当たり判定用のカプセル座標を算出
+	thisCInfo = getHitCapInfo();
+	otherCInfo = other.getHitCapInfo();
+
+	// 当たっているか判定
+	if (HitCheck_Capsule_Capsule(
+		thisCInfo.CapsulePosition1, thisCInfo.CapsulePosition2,
+		CharaHitWidth,
+		otherCInfo.CapsulePosition1, otherCInfo.CapsulePosition2,
+		other.CharaHitWidth) == TRUE)
+	{
+		// 当たっていたら thisが otherから離れる処理をする
+
+		// otherからthisへのベクトルを算出
+		otherToThisVec = VSub(Position, other.Position);
+
+		// Ｙ軸は見ない
+		otherToThisVec.y = 0.0f;
+
+		// 二人の距離を算出
+		Distance = VSize(otherToThisVec);
+
+		// otherから this へのベクトルを正規化
+		PushVec = VScale(otherToThisVec, 1.0f / Distance);
+
+		// 押し出す距離を算出、もし二人の距離から二人の大きさを引いた値に押し出し力を
+		// 足して離れてしまう場合は、ぴったりくっつく距離に移動する
+		if (Distance - TotalWidth + CHARA_HIT_PUSH_POWER > 0.0f)
+		{
+			TempY = Position.y;
+			Position = VAdd(other.Position, VScale(PushVec, TotalWidth));
+
+			// Ｙ座標は変化させない
+			Position.y = TempY;
+		}
+		else
+		{
+			// 押し出し
+			Position = VAdd(Position, VScale(PushVec, CHARA_HIT_PUSH_POWER));
+		}
 	}
-	else{
-		return FALSE;
-	}
+
 }

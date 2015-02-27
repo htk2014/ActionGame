@@ -27,4 +27,10 @@ public:
 	Goblin(VECTOR pos);
 };
 
+class Human :public Enemy{
+public:
+	Human(VECTOR pos);
+};
+
+
 #endif

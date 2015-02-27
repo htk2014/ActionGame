@@ -6,10 +6,18 @@
 #include <functional>
 #include <ctime>
 
-Enemy::Enemy(char *modelPath, char *neutralPath, char *rootPath, char *weaponPath, char *handFrameName, char *damageAnimName,VECTOR pos) :Chara(modelPath, neutralPath, rootPath, weaponPath, handFrameName, damageAnimName){
+Enemy::Enemy(
+	char *modelPath,
+	char *neutralPath,
+	char *rootPath,
+	char *weaponPath,
+	char *handFrameName,
+	char *damageAnimName,
+	VECTOR pos)
+	:Chara(modelPath, neutralPath, rootPath, weaponPath, handFrameName, damageAnimName)
+{
 	MV1SetPosition(ModelHandle, pos);
 	ShortOption = TRUE;
-	MV1SetPosition(ModelHandle, pos);
 	DamageSound = "Data/sound/VO_dmg_01.wav";
 	Chara::animInit();
 }
@@ -30,7 +38,7 @@ void Enemy::endAnim(){
 }
 
 void Enemy::update(Chara player,int attackKeyPressed){
-	int AttackHitted = isHitted(player, attackKeyPressed);
+	int AttackHitted = isHitted(player);
 	//攻撃を受けていてまだダメージフラグが立っていなかったらダメージアニメーションの用意をする
 	if (AttackHitted && !DamageFlag){
 		initDamageAnim();
@@ -66,7 +74,7 @@ void Enemy::think(){
 	//int AnimRandNum = myrand1();
 	int AngleRandNum = rand() % 8;
 	//int AngleRandNum = myrand2();
-
+	
 	int NewAnimState = AnimArray[AnimRandNum];
 	Angle = AngleArray[AngleRandNum];
 	//ランダムで出たのが攻撃なら、攻撃フラグを立てる
@@ -81,7 +89,16 @@ void Enemy::think(){
 	}
 }
 
-Goblin::Goblin(VECTOR pos) :Enemy("Data/Goblin/Goblin.mv1", "Data/Goblin/Anim_Neutral.mv1", "root", "Data/Weapon/Axe/Axe.mv1", "hansocketR", "Data/Goblin/Anim_Damage.mv1", pos){
+Goblin::Goblin(VECTOR pos) 
+	:Enemy(
+	"Data/Goblin/Goblin.mv1",
+	"Data/Goblin/Anim_Neutral.mv1",
+	"root",
+	"Data/Weapon/Axe/Axe.mv1",
+	"hansocketR",
+	"Data/Goblin/Anim_Damage.mv1",
+	pos)
+{
 	WalkAnim = MV1LoadModel("Data/Goblin/Anim_Walk.mv1");
 	AttackAnim = MV1LoadModel("Data/Goblin/Anim_Attack1.mv1");
 	//ランダムアクション用配列にアニメーションを入れる
@@ -97,7 +114,35 @@ Goblin::Goblin(VECTOR pos) :Enemy("Data/Goblin/Goblin.mv1", "Data/Goblin/Anim_Ne
 	DamageHitWidth = 50.0;
 	DamageHitHeight = 80.0;
 	DamageHitCenterPosition = { 0.0, 90.0, 0.0 };
+	AttackSphereSize = 40.0;
+}
 
+Human::Human(VECTOR pos)
+	:Enemy(
+	"Data/stable/testModel3.mv1",
+	"Data/stable/testModel3_Anim.mv1",
+	"models_root",
+	"Data/Weapon/Axe/Axe.mv1",
+	"models_root",
+	"Data/stable/testModel3_Anim.mv1",
+	pos)
+{
+	WalkAnim = MV1LoadModel("Data/stable/testModel3_Anim.mv1");
+	AttackAnim = MV1LoadModel("Data/stable/testModel3_Anim.mv1");
+	//ランダムアクション用配列にアニメーションを入れる
+	AnimArray[0] = NeutralAnim;
+	AnimArray[1] = WalkAnim;
+	AnimArray[2] = AttackAnim;
+	//アニメーションの状態をニュートラルで初期化
+	AnimState = NeutralAnim;
+
+	EndLocalPosition = { 0.0, 100.0, 0.0 };
+
+	//被当たり判定用
+	DamageHitWidth = 50.0;
+	DamageHitHeight = 80.0;
+	DamageHitCenterPosition = { 0.0, 90.0, 0.0 };
+	AttackSphereSize = 40.0;
 }
 
 

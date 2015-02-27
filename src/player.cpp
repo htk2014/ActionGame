@@ -2,7 +2,15 @@
 #include <math.h>
 #include "util.h"
 
-Player::Player() :Chara("Data/PC.mv1", "Data/Anim_Neutral.mv1", "root", "Data/Weapon/Sabel/Sabel.mv1", "wp", "Data/Anim_Damage.mv1"){
+Player::Player() 
+	:Chara(
+	"Data/PC.mv1",
+	"Data/Anim_Neutral.mv1",
+	"root",
+	"Data/Weapon/Sabel/Sabel.mv1",
+	"wp",
+	"Data/Anim_Damage.mv1")
+{
 	//‘O‰ñUŒ‚ƒL[‚ª‰Ÿ‚³‚ê‚Ä‚¢‚é‚©
 	LastAttackKeyPressed = FALSE;
 	//‘–‚Á‚Ä‚¢‚é‚©
@@ -31,6 +39,8 @@ Player::Player() :Chara("Data/PC.mv1", "Data/Anim_Neutral.mv1", "root", "Data/We
 	DamageHitCenterPosition = {0.0,90.0, 0.0};
 
 	DamageSound = "Data/sound/dmg_byAxe_00.wav";
+	
+	AttackSphereSize = 1.0;
 
 	Chara::animInit();
 }
@@ -113,7 +123,7 @@ void Player::setupAttack(KeyInfo KInfo, float angle){
 }
 
 void Player::update(KeyInfo KInfo, float angle,Enemy enemy){
-	int AttackHitted = isHitted(enemy, enemy.AttackFlag);
+	int AttackHitted = isHitted(enemy);
 	setupAttack(KInfo, angle);
 
 	if (AttackHitted && !DamageFlag){

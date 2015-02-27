@@ -21,3 +21,17 @@ float getAnimTotalTime(int ModelHandle, int AnimHandle){
 	MV1DetachAnim(ModelHandle, AnimAttachIndex);
 	return AttackTotalTime;
 }
+
+
+	// 指定の範囲からランダムで決定した値を取得する( 整数値 )
+	//     戻り値 : ランダムで決定した値
+	int GetRandomInt(
+		// 最大値
+		int MaxI,
+
+		// 最小値
+		int MinI
+		)
+	{
+		return GetRand(MaxI - MinI) + MinI;
+	}

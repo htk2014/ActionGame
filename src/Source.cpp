@@ -28,14 +28,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	player.Position = Position;
 	//敵オブジェクト生成
 	Goblin goblin1 = Goblin({ 520, 0, 1 });
-
-	int TestModelHandle = MV1LoadModel("Data/testCube2.mv1");
+	Human human = Human({ 520, 0, 1 });
+	//int TestModelHandle = MV1LoadModel("Data/stable/testModel3.mv1");
 	//int anim = MV1LoadModel("Data/stable/testModel1_anim.mv1");
 	  //AnimAttachIndex = MV1AttachAnim(ModelHandle, 0, anim, FALSE);
 
 	int stage = MV1LoadModel("Data/stage/Stage00.mv1");
 	MV1SetPosition(stage, { 0, 0, 0 });
-	MV1SetPosition(TestModelHandle, { 0, 0, 0 });
+	//MV1SetPosition(TestModelHandle, { 0, 0, 0 });
 
 	// 向きを初期化
 	Angle = 0.0f;
@@ -161,14 +161,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		player.update(PlayerKeyInfo, Angle, goblin1);
 		
 		goblin1.update(player, PlayerKeyInfo.AttackKeyPressed);
+		
+		human.update(player, PlayerKeyInfo.AttackKeyPressed);
 		//カメラ更新
 		camera.update(player.Position);
 
 		// ３Ｄモデルの描画
 		player.draw();
 		goblin1.draw();
+		human.draw();
 
-		MV1DrawModel(TestModelHandle);
+		//MV1DrawModel(TestModelHandle);
 
 		//ステージ描画
 		MV1DrawModel(stage);

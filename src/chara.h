@@ -38,12 +38,16 @@ public:
 	float  CosParam;
 	float  DamageHitWidth;
 	float  DamageHitHeight;
+	float  CharaHitWidth;
+	float  CharaHitHeight;
+	float AttackSphereSize;
 	VECTOR Position;
 	VECTOR PrevPosition;
 	VECTOR NowPosition;
 	VECTOR MoveVector;
 	VECTOR EndLocalPosition;
 	VECTOR DamageHitCenterPosition;
+	VECTOR CharaHitCenterPosition;
 
 	Chara(char *modelPath, char *neutralPath, char *rootPath, char *weaponPath, char *handFrameName,char *damageAnimName);
 	void animInit();
@@ -55,14 +59,16 @@ public:
 	//continueActionAngleは、continuationAnimが呼ばれている間変化しない値を想定　例 player.AttackAngleなど
 	void updatePosition(float angle, VECTOR moveVector,Chara other);
 	void continuationUpdate(float continueActionAngle,Chara other);
-	int isHitted(Chara chara,int enemyAttaking);
+	int isHitted(Chara other);
 	void update(float angle,Chara other);
 	void draw();
 	void terminateModel();
-	int attackJudge(CapInfo Cinfo, float EnemyHitWidth);
-	CapInfo getCapInfo();
+	int attackedkJudge(Chara other);
+	CapInfo getHitCapInfo();
+	CapInfo getDamageCapInfo();
 	void initDamageAnim();
-	int CollisionOther(Chara other);
+	//int CollisionOther(Chara other);
+	void CollisionOther(Chara other);
 };
 
 #endif
