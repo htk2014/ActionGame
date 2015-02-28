@@ -40,21 +40,21 @@ void Enemy::endAnim(){
 }
 /*
 void Enemy::update(Chara player,int attackKeyPressed){
-	int AttackHitted = isHitted(player);
-	//攻撃を受けていてまだダメージフラグが立っていなかったらダメージアニメーションの用意をする
-	if (AttackHitted && !DamageFlag){
-		initDamageAnim();
-	}
-	//攻撃を受けているか　または攻撃をしているか
-	if (DamageFlag || AttackFlag){
-		//ダメージアニメーションを始める。または継続
-		Chara::continuationUpdate(Angle,player);
-	}
-	else{
-		//受けていなかったらランダムでアクション
-		Enemy::think();
-		Chara::update(Angle,player);
-	}
+int AttackHitted = isHitted(player);
+//攻撃を受けていてまだダメージフラグが立っていなかったらダメージアニメーションの用意をする
+if (AttackHitted && !DamageFlag){
+initDamageAnim();
+}
+//攻撃を受けているか　または攻撃をしているか
+if (DamageFlag || AttackFlag){
+//ダメージアニメーションを始める。または継続
+Chara::continuationUpdate(Angle,player);
+}
+else{
+//受けていなかったらランダムでアクション
+Enemy::think();
+Chara::update(Angle,player);
+}
 }
 */
 
@@ -68,16 +68,23 @@ void Enemy::update(Chara player, int attackKeyPressed, Chara* otherVec, int vecS
 	//攻撃を受けているか　または攻撃をしているか
 	if (DamageFlag || AttackFlag){
 		//ダメージアニメーションを始める。または継続
-		continuationUpdate(Angle, otherVec,vecSize);
+		continuationUpdate(Angle, otherVec, vecSize);
 	}
 	else{
 		//受けていなかったらランダムでアクション
 		Enemy::think();
-		onceUpdate(Angle, otherVec, vecSize);
+		//選択されのが攻撃なら継続アニメーションで
+		if (AttackFlag){
+			//Chara::changeAnim(AttackAnim, TRUE);
+			continuationUpdate(Angle, otherVec, vecSize);
+		}
+		else{
+			onceUpdate(Angle, otherVec, vecSize);
+		}
 	}
 	// 体力ゲージを描画する座標を取得
 	VECTOR  ScreenPosition = ConvWorldPosToScreenPos(
-		VAdd(Position, VGet(0.0f,200.0f,0.0f)));
+		VAdd(Position, VGet(0.0f, 200.0f, 0.0f)));
 
 	//画面の外なら何もしない
 	if (ScreenPosition.z < 0.0f || ScreenPosition.z > 1.0f)
@@ -85,8 +92,8 @@ void Enemy::update(Chara player, int attackKeyPressed, Chara* otherVec, int vecS
 		return;
 	}
 	// 体力ゲージの描画
-    int startX = (int)(ScreenPosition.x - 50 / 2);
-	int startY = (int)(ScreenPosition.y - 50 / 2);
+	int startX = (int)(ScreenPosition.x - 10 / 2);
+	int startY = (int)(ScreenPosition.y - 10 / 2);
 	LBar.updateHP(HP, startX, startY);
 
 }
@@ -122,7 +129,7 @@ void Enemy::think(){
 	//int AnimRandNum = myrand1();
 	int AngleRandNum = rand() % 8;
 	//int AngleRandNum = myrand2();
-	
+
 	int NewAnimState = AnimArray[AnimRandNum];
 	Angle = AngleArray[AngleRandNum];
 	//ランダムで出たのが攻撃なら、攻撃フラグを立てる
@@ -137,9 +144,7 @@ void Enemy::think(){
 	}
 }
 
-
-
-Goblin::Goblin(VECTOR pos) 
+Goblin::Goblin(VECTOR pos)
 	:Enemy(
 	"Data/Goblin/Goblin.mv1",
 	"Data/Goblin/Anim_Neutral.mv1",

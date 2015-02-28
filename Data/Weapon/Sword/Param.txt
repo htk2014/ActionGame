@@ -1,2 +1,0 @@
-string Name      = Œ•
-string ModelPath = sword.mv1

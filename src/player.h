@@ -3,17 +3,17 @@
 #include "enemy.h"
 
 class Player: public Chara{
-public:
+private:
 	int    AttackAnim;
 	int    AttackAnim2;
 	int    AttackAnim3;
+public:
 	int    AttackState;
 	int    RunFlag;
 	int AttackAnimArray[3];
 	int AttackContinueFlag;
 	int AttackContinueNum;
 	int LastAttackKeyPressed;
-	float AttackTotalTimes[3];
 	float AttackAngle;
 	LifeBar LBar;
 

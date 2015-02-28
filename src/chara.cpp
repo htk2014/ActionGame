@@ -34,8 +34,8 @@ void EnemyLifeBar::updateHP(int point, int startX, int startY){
 }
 
 void EnemyLifeBar::draw(){
-	DrawBox(StartX, StartY, StartX + 40, StartY + 10, DamageColor, TRUE);
-	DrawBox(StartX, StartY, StartX + HP * 4/10, StartY + 10, HPColor, TRUE);
+	DrawBox(StartX, StartY, StartX + 40, StartY + 5, DamageColor, TRUE);
+	DrawBox(StartX, StartY, StartX + HP * 4/10, StartY + 5, HPColor, TRUE);
 }
 
 Chara::Chara(

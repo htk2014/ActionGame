@@ -194,7 +194,7 @@ void Player::update(KeyInfo KInfo, float angle, Chara* enemyVec,int vecSize){
 		}
 		onceUpdate(angle, enemyVec,vecSize);
 	}
-
+	//ライフバー更新
 	LBar.updateHP(HP);
 	//連続攻撃用過去キー情報更新
 	LastAttackKeyPressed = KInfo.AttackKeyPressed;
