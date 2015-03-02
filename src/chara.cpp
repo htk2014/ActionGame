@@ -205,6 +205,37 @@ void Chara::updatePosition(float angle, Chara* otherArray,int vecSize){
 	MV1SetRotationXYZ(ModelHandle, VGet(0.0f, angle / 180.0f * DX_PI_F, 0.0f));
 }
 
+void Chara::RockOnupdatePosition(float angle, Chara* otherVec, int vecSize){
+	//変更する前のキャラの座標を保存しておく
+	VECTOR tempPos = Position;
+
+	//攻撃処理は除く
+	if (!AttackFlag){
+		// キャラクターの向きに合わせて移動ベクトルの角度を回転させて、キャラクターモデルの座標に加算
+		SinParam = sin(-angle / 180.0f * DX_PI_F);
+		CosParam = cos(-angle / 180.0f * DX_PI_F);
+		Position.x += MoveVector.x * CosParam - MoveVector.z * SinParam;
+		Position.z += MoveVector.x * SinParam + MoveVector.z * CosParam;
+	}
+
+	//衝突処理
+	CollisionOther(otherVec, vecSize);
+
+	// ３Ｄモデルに新しい座標をセット
+	MV1SetPosition(ModelHandle, Position);
+
+	if (WeaponHandle){
+		//武器の位置を更新
+		SetModelFramePosition(ModelHandle, HandFrameName, WeaponHandle);
+	}
+
+	// 新しい向きをセット
+	MV1SetRotationXYZ(ModelHandle, VGet(0.0f, angle / 180.0f * DX_PI_F + DX_PI_F, 0.0f));
+}
+
+
+
+
 void Chara::continuationUpdate(float continueActionAngle, Chara other){
 	// アニメーション時間を進める前の『アニメーションで移動をしているフレームの座標』を取得しておく
 	PrevPosition = MV1GetAttachAnimFrameLocalPosition(ModelHandle, AnimAttachIndex, MoveAnimFrameIndex);
@@ -244,6 +275,26 @@ void Chara::continuationUpdate(float continueActionAngle){
 	{
 		continueAnim();
 	}
+}
+
+void Chara::onceUpdate(float angle, Chara* otherVec, int vecSize){
+	onceUpdate(angle);
+	updatePosition(angle, otherVec, vecSize);
+}
+
+void Chara::RockOnOnceUpdate(float angle, Chara* otherVec, int vecSize){
+	onceUpdate(angle);
+	RockOnupdatePosition(angle, otherVec, vecSize);
+}
+
+void Chara::continuationUpdate(float continueActionAngle, Chara* otherVec, int vecSize){
+	continuationUpdate(continueActionAngle);
+	updatePosition(continueActionAngle, otherVec, vecSize);
+}
+
+void Chara::RockOncontinuationUpdate(float continueActionAngle, Chara* otherVec, int vecSize){
+	continuationUpdate(continueActionAngle);
+	RockOnupdatePosition(continueActionAngle, otherVec, vecSize);
 }
 
 void Chara::update(float angle, Chara other){
@@ -370,31 +421,25 @@ int Chara::attackedkJudge(Chara other){
 	return HitResult;
 }
 
-CapInfo Chara::getHitCapInfo(){
+CapInfo Chara::getCapInfo(VECTOR centerPos, float hitHeight){
 	VECTOR CapsulePosition1;
 	VECTOR CapsulePosition2;
 
 	CapsulePosition1 =
-		CapsulePosition2 = VAdd(Position, CharaHitCenterPosition);
+		CapsulePosition2 = VAdd(Position, centerPos);
 
-	CapsulePosition1.y -= CharaHitHeight / 2.0f;
-	CapsulePosition2.y += CharaHitHeight / 2.0f;
+	CapsulePosition1.y -= hitHeight / 2.0f;
+	CapsulePosition2.y += hitHeight / 2.0f;
 
 	return{ CapsulePosition1, CapsulePosition2 };
 }
 
+CapInfo Chara::getHitCapInfo(){
+	return getCapInfo(CharaHitCenterPosition, CharaHitHeight);
+}
+
 CapInfo Chara::getDamageCapInfo(){
-
-	VECTOR CapsulePosition1;
-	VECTOR CapsulePosition2;
-
-	CapsulePosition1 =
-		CapsulePosition2 = VAdd(Position, DamageHitCenterPosition);
-
-	CapsulePosition1.y -= DamageHitHeight / 2.0f;
-	CapsulePosition2.y += DamageHitHeight / 2.0f;
-
-	return{ CapsulePosition1, CapsulePosition2 };
+	return getCapInfo(DamageHitCenterPosition, DamageHitHeight);
 }
 
 void Chara::initDamageAnim(){
@@ -489,8 +534,8 @@ void Chara::CollisionOther(Chara other){
 			Position = VAdd(Position, VScale(PushVec, CHARA_HIT_PUSH_POWER));
 		}
 	}
-
 }
+
 //player用
 void Chara::CollisionOther(Chara* otherVec, int vecSize){
 

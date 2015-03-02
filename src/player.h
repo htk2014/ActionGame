@@ -14,8 +14,11 @@ public:
 	int AttackContinueFlag;
 	int AttackContinueNum;
 	int LastAttackKeyPressed;
+	int LastRockOnKeyPressed;
+	int TargetNum;
 	float AttackAngle;
 	LifeBar LBar;
+	VECTOR TargetEnemyPos;
 
 	Player();
 	void changeAnim(int AnimFlag, int Anim);
@@ -27,9 +30,10 @@ public:
 	void setupAttack(KeyInfo KInfo, float angle);
 	void update(KeyInfo KInfo, float angle, Enemy enemy);
 	void update(KeyInfo KInfo, float angle, Chara* enemyVec, int vecSize);
-	void onceUpdate(float angle, Chara* enemyVec,int vecSize);
-	void continuationUpdate(float continueActionAngle, Chara* enemyVec, int vecSize);
 	void draw();
+	void rockOn();
+	void changeTarget(Chara* enemyVec, int EnemyMaxNum);
+
 
 };
 

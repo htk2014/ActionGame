@@ -68,7 +68,7 @@ void Enemy::update(Chara player, int attackKeyPressed, Chara* otherVec, int vecS
 	//攻撃を受けているか　または攻撃をしているか
 	if (DamageFlag || AttackFlag){
 		//ダメージアニメーションを始める。または継続
-		continuationUpdate(Angle, otherVec, vecSize);
+		Chara::continuationUpdate(Angle, otherVec, vecSize);
 	}
 	else{
 		//受けていなかったらランダムでアクション
@@ -76,10 +76,10 @@ void Enemy::update(Chara player, int attackKeyPressed, Chara* otherVec, int vecS
 		//選択されのが攻撃なら継続アニメーションで
 		if (AttackFlag){
 			//Chara::changeAnim(AttackAnim, TRUE);
-			continuationUpdate(Angle, otherVec, vecSize);
+			Chara::continuationUpdate(Angle, otherVec, vecSize);
 		}
 		else{
-			onceUpdate(Angle, otherVec, vecSize);
+			Chara::onceUpdate(Angle, otherVec, vecSize);
 		}
 	}
 	// 体力ゲージを描画する座標を取得
@@ -97,17 +97,6 @@ void Enemy::update(Chara player, int attackKeyPressed, Chara* otherVec, int vecS
 	LBar.updateHP(HP, startX, startY);
 
 }
-
-void Enemy::onceUpdate(float angle, Chara* otherVec, int vecSize){
-	Chara::onceUpdate(angle);
-	Chara::updatePosition(angle, otherVec, vecSize);
-}
-
-void Enemy::continuationUpdate(float continueActionAngle, Chara* otherVec, int vecSize){
-	Chara::continuationUpdate(continueActionAngle);
-	Chara::updatePosition(continueActionAngle, otherVec, vecSize);
-}
-
 
 void Enemy::draw(){
 	Chara::draw();

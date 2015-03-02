@@ -2,7 +2,7 @@
 #include <math.h>
 #include "util.h"
 
-Player::Player() 
+Player::Player()
 	:Chara(
 	"Data/PC.mv1",
 	"Data/Anim_Neutral.mv1",
@@ -13,6 +13,7 @@ Player::Player()
 {
 	//前回攻撃キーが押されているか
 	LastAttackKeyPressed = FALSE;
+	LastRockOnKeyPressed = FALSE;
 	//走っているか
 	RunFlag = FALSE;
 	ShortOption = FALSE;
@@ -36,14 +37,17 @@ Player::Player()
 	//被攻撃判定用
 	DamageHitWidth = 50.0;
 	DamageHitHeight = 80.0;
-	DamageHitCenterPosition = {0.0,90.0, 0.0};
+	DamageHitCenterPosition = { 0.0, 90.0, 0.0 };
 
 	DamageSound = "Data/sound/dmg_byAxe_00.wav";
-	
+
 	AttackSphereSize = 1.0;
 	HP = 100;
 	//ライフバー
 	LBar = LifeBar::LifeBar();
+
+	TargetNum = 0;
+	TargetEnemyPos = VGet(0.0f, 0.0f, 0.0f);
 
 	Chara::animInit();
 }
@@ -113,10 +117,12 @@ void Player::endAnim(){
 		AttackContinueFlag = FALSE;
 	}
 }
+
 void Player::setupAttack(KeyInfo KInfo, float angle){
 	//攻撃キーが押されていて、攻撃フラグがまだたっていなかったら攻撃アニメーションの準備をする
 	if (KInfo.AttackKeyPressed && !AttackFlag){
 		attackAnimInit(angle);
+		//rockOn();
 	}
 	//攻撃キーが押されていて、攻撃フラグがすでに立っているなら連続攻撃フラグを立てる
 	//連続攻撃はキーを一度離してからじゃないとできないようにする(前回のキーがFALSE -> !LastAttackKeyPressed )
@@ -124,95 +130,105 @@ void Player::setupAttack(KeyInfo KInfo, float angle){
 		AttackContinueFlag = TRUE;
 	}
 }
-/*
-void Player::update(KeyInfo KInfo, float angle,Enemy enemy){
-	int AttackHitted = isHitted(enemy);
-	setupAttack(KInfo, angle);
 
-	if (AttackHitted && !DamageFlag){
-		initDamageAnim();
+void Player::update(KeyInfo KInfo, float angle, Chara* enemyVec, int vecSize){
+	int AttackHitted = isHitted(enemyVec, vecSize);
+
+	if (!DamageFlag){
+		setupAttack(KInfo, angle);
 	}
-
-	//攻撃フラグがたっているなら攻撃を始める。または攻撃を継続
-	if (AttackFlag || DamageFlag){
-		//連続攻撃フラグが立っているなら次のアニメーションに移行
-		if (!LastAttackKeyPressed && KInfo.AttackKeyPressed && AttackFlag){
-			//連続攻撃がまだ続けられるか？
-			if (AttackContinueFlag && AttackContinueNum < 2){
-				//アニメーション変更
-				setupContinueAttack();
-			}
-		}
-		Chara::continuationUpdate(AttackAngle,enemy);
-
-	}
-	else{
-		//移動フラグに変更があるか？
-		if (RunFlag != KInfo.MoveKeyPressed)
-		{
-			RunFlag = KInfo.MoveKeyPressed;
-			changeAnim(RunFlag, RunAnim);
-		}
-		Chara::update(angle,enemy);
-	}
-
-	
-	//連続攻撃用過去キー情報更新
-	LastAttackKeyPressed = KInfo.AttackKeyPressed;
-
-}
-*/
-
-void Player::update(KeyInfo KInfo, float angle, Chara* enemyVec,int vecSize){
-	int AttackHitted = isHitted(enemyVec,vecSize);
-	setupAttack(KInfo, angle);
 
 	if (AttackHitted && !DamageFlag){
 		initDamageAnim();
 		HP -= 10;
 	}
 
-	//攻撃フラグがたっているなら攻撃を始める。または攻撃を継続
+	//攻撃フラグがたっているなら攻撃を始める。または攻撃かダメージアニメーションを継続
 	if (AttackFlag || DamageFlag){
 		//連続攻撃フラグが立っているなら次のアニメーションに移行
-		if (!LastAttackKeyPressed && KInfo.AttackKeyPressed && AttackFlag){
+		if (LastAttackKeyPressed != KInfo.AttackKeyPressed && KInfo.AttackKeyPressed && AttackFlag){
 			//連続攻撃がまだ続けられるか？
 			if (AttackContinueFlag && AttackContinueNum < 2){
 				//アニメーション変更
 				setupContinueAttack();
 			}
 		}
-		continuationUpdate(AttackAngle, enemyVec,vecSize);
-
+		if (AttackFlag){
+			rockOn();
+		}
+		//Chara::continuationUpdate(AttackAngle, enemyVec,vecSize);
+		Chara::RockOncontinuationUpdate(AttackAngle, enemyVec, vecSize);
+		//Chara::continuationUpdate(AttackAngle, enemyVec, vecSize);
+		
+	}
+	else if (KInfo.RockOnKeyPressed && LastRockOnKeyPressed != KInfo.RockOnKeyPressed){
+		//ロックオンするターゲットを変える
+		changeTarget(enemyVec, vecSize);
+		rockOn();
+		//ロックオンしている敵の方向に向かせる
+		//float rockOnAngle = getRockOnAngle(Position, TargetEnemyPos);
+		//MV1SetRotationXYZ(ModelHandle, VGet(0.0f, rockOnAngle + DX_PI_F, 0.0f));
+		MV1SetRotationXYZ(ModelHandle, VGet(0.0f, AttackAngle / 180.0f * DX_PI_F + DX_PI_F, 0.0f));
+		
+		//AttackAngle = rockOnAngle;
 	}
 	else{
-		//移動フラグに変更があるか？
 		if (RunFlag != KInfo.MoveKeyPressed)
 		{
 			RunFlag = KInfo.MoveKeyPressed;
 			changeAnim(RunFlag, RunAnim);
 		}
-		onceUpdate(angle, enemyVec,vecSize);
+		
+		if (KInfo.MoveKeyPressed){
+			//移動フラグに変更があるか？
+			if (RunFlag != KInfo.MoveKeyPressed)
+			{
+				RunFlag = KInfo.MoveKeyPressed;
+				changeAnim(RunFlag, RunAnim);
+			}
+			///Chara::RockOnOnceUpdate(AttackAngle, enemyVec, vecSize);
+			rockOn();
+			Chara::onceUpdate(angle+AttackAngle, enemyVec, vecSize);
+			//MV1SetRotationXYZ(ModelHandle, VGet(0.0f, AttackAngle + DX_PI_F, 0.0f));
+		}
+		//ニュートラル
+		else{
+			Chara::RockOnOnceUpdate(AttackAngle, enemyVec, vecSize);
+			rockOn();
+			//MV1SetRotationXYZ(ModelHandle, VGet(0.0f, AttackAngle + DX_PI_F, 0.0f));
+			MV1SetRotationXYZ(ModelHandle, VGet(0.0f, AttackAngle / 180.0f * DX_PI_F + DX_PI_F, 0.0f));
+		}
+
 	}
+	float hoge;
+	hoge = AttackAngle * 180 / DX_PI_F;
+
 	//ライフバー更新
 	LBar.updateHP(HP);
 	//連続攻撃用過去キー情報更新
 	LastAttackKeyPressed = KInfo.AttackKeyPressed;
+	LastRockOnKeyPressed = KInfo.RockOnKeyPressed;
 
 }
-
-void Player::onceUpdate(float angle,Chara* enemyVec,int vecSize){
-	Chara::onceUpdate(angle);
-	Chara::updatePosition(angle, enemyVec, vecSize);
-}
-
-void Player::continuationUpdate(float continueActionAngle, Chara* enemyVec, int vecSize){
-	Chara::continuationUpdate(continueActionAngle);
-	Chara::updatePosition(continueActionAngle, enemyVec, vecSize);
-}
-
 
 void Player::draw(){
 	Chara::draw();
 	LBar.draw();
+}
+
+void Player::rockOn(){
+	AttackAngle = getRockOnAngle(Position, TargetEnemyPos) * 180 / DX_PI_F;
+	//AttackAngle = (getRockOnAngle(Position, TargetEnemyPos) + DX_PI_F) * 180 / DX_PI_F;
+}
+
+void Player::changeTarget(Chara* enemyVec, int EnemyMaxNum){
+	TargetEnemyPos = enemyVec[TargetNum].Position;
+
+	if (TargetNum >= EnemyMaxNum-1){
+		TargetNum = 0;
+	}
+	else {
+		TargetNum++;
+	}
+
 }

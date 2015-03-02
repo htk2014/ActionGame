@@ -27,7 +27,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	player.Position = VGet(500.0f, 0.0f, 0.0f);
 
 	//敵オブジェクト生成
-	Goblin goblin1 = Goblin(VGet(520.0f, 0.0f, 10.0f));
+	Goblin goblin1 = Goblin(VGet(-520.0f, 0.0f, 10.0f));
 
 	Goblin goblin2 = Goblin(VGet(420.0f, 0.0f, -10.0f));
 
@@ -45,7 +45,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	SetDrawScreen(DX_SCREEN_BACK);
 
 	//カメラ生成
-	Camera camera = Camera();
+	Camera camera = Camera(player.Position);
 
 	// 背景の色を灰色にする
 	SetBackgroundColor(0, 0, 0);
@@ -100,6 +100,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			PlayerKeyInfo.AttackKeyPressed = TRUE;
 		}
 
+		PlayerKeyInfo.RockOnKeyPressed = FALSE;
+		//ロックオンキーが押されたか？
+		if (CheckHitKey(KEY_INPUT_A) == 1)
+		{
+			PlayerKeyInfo.RockOnKeyPressed = TRUE;
+		}
+
 		// ゲームパッド＋キーボードの入力を取得
 		Input = GetJoypadInputState(DX_INPUT_KEY_PAD1);
 
@@ -136,24 +143,28 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 							if ((Input & PAD_INPUT_LEFT) != 0)
 							{
 								Angle = 90.0f;
+								//Angle = 0.0f;
 								PlayerKeyInfo.MoveKeyPressed = TRUE;
 							}
 							else
 								if ((Input & PAD_INPUT_RIGHT) != 0)
 								{
 									Angle = -90.0f;
+									//Angle = 180.0f;
 									PlayerKeyInfo.MoveKeyPressed = TRUE;
 								}
 								else
 									if ((Input & PAD_INPUT_DOWN) != 0)
 									{
 										Angle = 0.0f;
+										//Angle = -90.0f;
 										PlayerKeyInfo.MoveKeyPressed = TRUE;
 									}
 									else
 										if ((Input & PAD_INPUT_UP) != 0)
 										{
 											Angle = 180.0f;
+											//Angle = 90.0f;
 											PlayerKeyInfo.MoveKeyPressed = TRUE;
 										}
 		}
@@ -172,8 +183,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		
 		//human.update(player, PlayerKeyInfo.AttackKeyPressed);
 		//カメラ更新
-		camera.update(player.Position);
-
+		camera.update(player.Position, player.AttackAngle);
+		
 		// ３Ｄモデルの描画
 		//ステージ描画
 		MV1DrawModel(stage);

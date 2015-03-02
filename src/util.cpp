@@ -1,4 +1,5 @@
 #include "DxLib.h"
+#include <math.h>
 #include "util.h"
 
 void SetModelFramePosition(int ModelHandle, char *FrameName, int SetModelHandle)
@@ -34,4 +35,18 @@ float getAnimTotalTime(int ModelHandle, int AnimHandle){
 		)
 	{
 		return GetRand(MaxI - MinI) + MinI;
+	}
+
+	// キャラを指定の座標の方向に向かせる
+	float getRockOnAngle(VECTOR selfPosition,VECTOR targetPosition){
+		VECTOR targetVector;
+		float angle;
+
+		// キャラの座標から指定の座標へのベクトルを算出
+		targetVector = VSub(targetPosition, selfPosition);
+
+		// atan2 を使用して方向ベクトルから角度を求める
+		angle = atan2(targetVector.x, targetVector.z);
+
+		return angle;
 	}

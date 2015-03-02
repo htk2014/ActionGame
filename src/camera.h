@@ -3,11 +3,20 @@
 class Camera{
 public:
 	VECTOR MoveVector;
+	VECTOR Position;
+	float Mx;
+	float Mz;
 	float  SinParam;
 	float  CosParam;
 	float  HAngle;
 	float  VAngle;
+	float r;
+	float v;
 
-	Camera();
+
+	Camera(VECTOR playerPos);
 	void update(VECTOR playerPos);
+	void update(VECTOR playerPos, float hAngle);
+	void update(float hAngle);
+
 };

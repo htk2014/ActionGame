@@ -8,6 +8,7 @@ struct KeyInfo
 {
 	int MoveKeyPressed;
 	int AttackKeyPressed;
+	int RockOnKeyPressed;
 };
 
 struct CapInfo
@@ -83,15 +84,21 @@ public:
 	//continueActionAngleは、continuationAnimが呼ばれている間変化しない値を想定　例 player.AttackAngleなど
 	void updatePosition(float angle, VECTOR moveVector, Chara other);
 	void updatePosition(float angle, Chara* otherVec, int vecSize);
+	void RockOnupdatePosition(float angle, Chara* otherVec, int vecSize);
 	void continuationUpdate(float continueActionAngle, Chara other);
 	void continuationUpdate(float continueActionAngle);
-	void update(float angle,Chara other);
+	void continuationUpdate(float continueActionAngle, Chara* otherVec, int vecSize);
+	void RockOncontinuationUpdate(float continueActionAngle, Chara* otherVec, int vecSize);
+	void update(float angle, Chara other);
 	void onceUpdate(float angle);
+	void onceUpdate(float angle, Chara* otherVec, int vecSize);
+	void RockOnOnceUpdate(float angle, Chara* otherVec, int vecSize);
 	int isHitted(Chara other);
 	int isHitted(Chara* otherVec, int vecSize);
 	void draw();
 	void terminateModel();
 	int attackedkJudge(Chara other);
+	CapInfo getCapInfo(VECTOR centerPos, float hitHeight);
 	CapInfo getHitCapInfo();
 	CapInfo getDamageCapInfo();
 	void initDamageAnim();
