@@ -89,7 +89,7 @@
     <ClCompile Include="src\chara.cpp" />
     <ClCompile Include="src\enemy.cpp" />
     <ClCompile Include="src\player.cpp" />
-    <ClCompile Include="src\Source.cpp" />
+    <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\util.cpp" />
   </ItemGroup>
   <ItemGroup>

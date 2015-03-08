@@ -1,5 +1,6 @@
 #include "DxLib.h"
 #include "util.h"
+#include <vector>
 
 #ifndef CHARA_CLASS
 #define CHARA_CLASS
@@ -84,17 +85,24 @@ public:
 	//continueActionAngleは、continuationAnimが呼ばれている間変化しない値を想定　例 player.AttackAngleなど
 	void updatePosition(float angle, VECTOR moveVector, Chara other);
 	void updatePosition(float angle, Chara* otherVec, int vecSize);
+	void updatePosition(float angle, std::vector<Chara> otherVec);
 	void RockOnupdatePosition(float angle, Chara* otherVec, int vecSize);
+	void RockOnupdatePosition(float angle, std::vector<Chara> otherVec);
 	void continuationUpdate(float continueActionAngle, Chara other);
 	void continuationUpdate(float continueActionAngle);
 	void continuationUpdate(float continueActionAngle, Chara* otherVec, int vecSize);
+	void continuationUpdate(float continueActionAngle, std::vector<Chara> otherVec);
 	void RockOncontinuationUpdate(float continueActionAngle, Chara* otherVec, int vecSize);
+	void RockOncontinuationUpdate(float continueActionAngle, std::vector<Chara> otherVec);
 	void update(float angle, Chara other);
 	void onceUpdate(float angle);
 	void onceUpdate(float angle, Chara* otherVec, int vecSize);
+	void onceUpdate(float angle, std::vector<Chara> otherVec);
 	void RockOnOnceUpdate(float angle, Chara* otherVec, int vecSize);
+	void RockOnOnceUpdate(float angle, std::vector<Chara> otherVec);
 	int isHitted(Chara other);
 	int isHitted(Chara* otherVec, int vecSize);
+	int isHitted(std::vector<Chara> otherVec);
 	void draw();
 	void terminateModel();
 	int attackedkJudge(Chara other);
@@ -105,6 +113,7 @@ public:
 	//int CollisionOther(Chara other);
 	void CollisionOther(Chara other);
 	void CollisionOther(Chara* otherVec, int vecSize);
+	void CollisionOther(std::vector<Chara> otherVec);
 };
 
 #endif

@@ -26,6 +26,7 @@ public:
 	void endAnim();
 	void update(Chara player, int attackKeyPressed, Chara* otherVec, int vecSize);
 	void update(Chara player, int attackKeyPressed);
+	void update(Chara player, int attackKeyPressed, std::vector<Chara> enemyVec);
 	void draw();
 	void terminateModel();
 	void think();

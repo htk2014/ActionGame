@@ -60,6 +60,7 @@ Chara::Chara(
 	CharaHitHeight = 60.0f;
 	CharaHitCenterPosition = { 0.0f, 90.0f, 0.0f };
 
+
 }
 
 void Chara::changeAnim(int anim){
@@ -205,6 +206,34 @@ void Chara::updatePosition(float angle, Chara* otherArray,int vecSize){
 	MV1SetRotationXYZ(ModelHandle, VGet(0.0f, angle / 180.0f * DX_PI_F, 0.0f));
 }
 
+void Chara::updatePosition(float angle, std::vector<Chara> otherVec){
+	//変更する前のキャラの座標を保存しておく
+	VECTOR tempPos = Position;
+
+	//攻撃処理は除く
+	if (!AttackFlag){
+		// キャラクターの向きに合わせて移動ベクトルの角度を回転させて、キャラクターモデルの座標に加算
+		SinParam = sin(-angle / 180.0f * DX_PI_F);
+		CosParam = cos(-angle / 180.0f * DX_PI_F);
+		Position.x += MoveVector.x * CosParam - MoveVector.z * SinParam;
+		Position.z += MoveVector.x * SinParam + MoveVector.z * CosParam;
+	}
+
+	//衝突処理
+	CollisionOther(otherVec);
+
+	// ３Ｄモデルに新しい座標をセット
+	MV1SetPosition(ModelHandle, Position);
+
+	if (WeaponHandle){
+		//武器の位置を更新
+		SetModelFramePosition(ModelHandle, HandFrameName, WeaponHandle);
+	}
+
+	// 新しい向きをセット
+	MV1SetRotationXYZ(ModelHandle, VGet(0.0f, angle / 180.0f * DX_PI_F, 0.0f));
+}
+
 void Chara::RockOnupdatePosition(float angle, Chara* otherVec, int vecSize){
 	//変更する前のキャラの座標を保存しておく
 	VECTOR tempPos = Position;
@@ -220,6 +249,34 @@ void Chara::RockOnupdatePosition(float angle, Chara* otherVec, int vecSize){
 
 	//衝突処理
 	CollisionOther(otherVec, vecSize);
+
+	// ３Ｄモデルに新しい座標をセット
+	MV1SetPosition(ModelHandle, Position);
+
+	if (WeaponHandle){
+		//武器の位置を更新
+		SetModelFramePosition(ModelHandle, HandFrameName, WeaponHandle);
+	}
+
+	// 新しい向きをセット
+	MV1SetRotationXYZ(ModelHandle, VGet(0.0f, angle / 180.0f * DX_PI_F + DX_PI_F, 0.0f));
+}
+
+void Chara::RockOnupdatePosition(float angle, std::vector<Chara> otherVec){
+	//変更する前のキャラの座標を保存しておく
+	VECTOR tempPos = Position;
+
+	//攻撃処理は除く
+	if (!AttackFlag){
+		// キャラクターの向きに合わせて移動ベクトルの角度を回転させて、キャラクターモデルの座標に加算
+		SinParam = sin(-angle / 180.0f * DX_PI_F);
+		CosParam = cos(-angle / 180.0f * DX_PI_F);
+		Position.x += MoveVector.x * CosParam - MoveVector.z * SinParam;
+		Position.z += MoveVector.x * SinParam + MoveVector.z * CosParam;
+	}
+
+	//衝突処理
+	CollisionOther(otherVec);
 
 	// ３Ｄモデルに新しい座標をセット
 	MV1SetPosition(ModelHandle, Position);
@@ -282,19 +339,39 @@ void Chara::onceUpdate(float angle, Chara* otherVec, int vecSize){
 	updatePosition(angle, otherVec, vecSize);
 }
 
+void Chara::onceUpdate(float angle, std::vector<Chara> otherVec){
+	onceUpdate(angle);
+	updatePosition(angle, otherVec);
+}
+
+
 void Chara::RockOnOnceUpdate(float angle, Chara* otherVec, int vecSize){
 	onceUpdate(angle);
 	RockOnupdatePosition(angle, otherVec, vecSize);
+}
+
+void Chara::RockOnOnceUpdate(float angle, std::vector<Chara> otherVec){
+	onceUpdate(angle);
+	RockOnupdatePosition(angle, otherVec);
 }
 
 void Chara::continuationUpdate(float continueActionAngle, Chara* otherVec, int vecSize){
 	continuationUpdate(continueActionAngle);
 	updatePosition(continueActionAngle, otherVec, vecSize);
 }
+void Chara::continuationUpdate(float continueActionAngle, std::vector<Chara> otherVec){
+	continuationUpdate(continueActionAngle);
+	updatePosition(continueActionAngle, otherVec);
+}
 
 void Chara::RockOncontinuationUpdate(float continueActionAngle, Chara* otherVec, int vecSize){
 	continuationUpdate(continueActionAngle);
 	RockOnupdatePosition(continueActionAngle, otherVec, vecSize);
+}
+
+void Chara::RockOncontinuationUpdate(float continueActionAngle,std::vector<Chara> otherVec){
+	continuationUpdate(continueActionAngle);
+	RockOnupdatePosition(continueActionAngle,otherVec);
 }
 
 void Chara::update(float angle, Chara other){
@@ -380,10 +457,22 @@ void Chara::draw(){
 	MV1DrawModel(ModelHandle);
 	CapInfo cap = getHitCapInfo();
 	//カプセル描画
-	DrawCapsule3D(cap.CapsulePosition1, cap.CapsulePosition2, DamageHitWidth, 8, GetColor(0, 255, 0), GetColor(255, 255, 255), FALSE);
+	//DrawCapsule3D(cap.CapsulePosition1, cap.CapsulePosition2, DamageHitWidth, 8, GetColor(0, 255, 0), GetColor(255, 255, 255), FALSE);
 
 	if (WeaponHandle){
 		MV1DrawModel(WeaponHandle);
+
+		VECTOR nearPos[2];
+		VECTOR farPos[2];
+		//敵の攻撃座標計算
+		MATRIX AttackPosMatrix =
+			MV1GetFrameLocalWorldMatrix(ModelHandle,HandFrameIndex);
+
+		// 攻撃判定で使用する２点を算出
+		nearPos[0] = VTransform(VGet(0.0f, 0.0f, 0.0f), AttackPosMatrix);
+		farPos[0] = VTransform(EndLocalPosition, AttackPosMatrix);
+
+		DrawCapsule3D(nearPos[0], farPos[0], AttackSphereSize, 8, GetColor(0, 255, 0), GetColor(255, 255, 255), FALSE);
 	}
 }
 
@@ -414,7 +503,7 @@ int Chara::attackedkJudge(Chara other){
 		selfCinfo.CapsulePosition2,
 		DamageHitWidth,
 		nearPos[0],
-		nearPos[1],
+		farPos[0],
 		other.AttackSphereSize
 		);
 
@@ -443,9 +532,11 @@ CapInfo Chara::getDamageCapInfo(){
 }
 
 void Chara::initDamageAnim(){
+	if (AttackFlag){
+		AttackFlag = FALSE;
+	}
 	//攻撃を受けているフラグを立てる
 	DamageFlag = TRUE;
-	//ダメージアニメーションに変更(ShortOptionがTRUEならダメージアニメの通常の半分の時間に　理由:まんまだと無敵時間が長すぎるから）
 	Chara::changeAnim(DamageAnim, ShortOption);
 	//ダメージ用の音楽を流す
 	PlaySoundFile(DamageSound, DX_PLAYTYPE_BACK);
@@ -468,6 +559,19 @@ int Chara::isHitted(Chara other){
 int Chara::isHitted(Chara* otherVec, int vecSize){
 	int HitResult = FALSE;
 	for (int i=0; i < vecSize; i++){
+		Chara other = otherVec[i];
+		//攻撃を受けていたら即座にTRUEを返す
+		if (attackedkJudge(other) && other.AttackFlag){
+			HitResult = TRUE;
+			break;
+		}
+	}
+	return HitResult;
+}
+
+int Chara::isHitted(std::vector<Chara> otherVec){
+	int HitResult = FALSE;
+	for (int i = 0; i < otherVec.size(); i++){
 		Chara other = otherVec[i];
 		//攻撃を受けていたら即座にTRUEを返す
 		if (attackedkJudge(other) && other.AttackFlag){
@@ -600,3 +704,65 @@ void Chara::CollisionOther(Chara* otherVec, int vecSize){
 	}
 }
 
+void Chara::CollisionOther(std::vector<Chara> otherVec){
+
+	VECTOR otherToThisVec;
+	VECTOR PushVec;
+	float  Distance;
+	float  TotalWidth;
+	float  TempY;
+	CapInfo thisCInfo;
+	CapInfo otherCInfo;
+
+	for (int i = 0; i < otherVec.size(); i++){
+
+		Chara other = otherVec[i];
+
+		// キャラ同士の幅の合計を算出
+		TotalWidth =
+			CharaHitWidth + other.CharaHitWidth;
+
+		// 各キャラの当たり判定用のカプセル座標を算出
+		thisCInfo = getHitCapInfo();
+		otherCInfo = other.getHitCapInfo();
+
+		// 当たっているか判定
+		if (HitCheck_Capsule_Capsule(
+			thisCInfo.CapsulePosition1, thisCInfo.CapsulePosition2,
+			CharaHitWidth,
+			otherCInfo.CapsulePosition1, otherCInfo.CapsulePosition2,
+			other.CharaHitWidth) == TRUE)
+		{
+
+			// 当たっていたら thisが otherから離れる処理をする
+
+			// otherからthisへのベクトルを算出
+			otherToThisVec = VSub(Position, other.Position);
+
+			// Ｙ軸は見ない
+			otherToThisVec.y = 0.0f;
+
+			// 二人の距離を算出
+			Distance = VSize(otherToThisVec);
+
+			// otherから this へのベクトルを正規化
+			PushVec = VScale(otherToThisVec, 1.0f / Distance);
+
+			// 押し出す距離を算出、もし二人の距離から二人の大きさを引いた値に押し出し力を
+			// 足して離れてしまう場合は、ぴったりくっつく距離に移動する
+			if (Distance - TotalWidth + CHARA_HIT_PUSH_POWER > 0.0f)
+			{
+				TempY = Position.y;
+				Position = VAdd(other.Position, VScale(PushVec, TotalWidth));
+
+				// Ｙ座標は変化させない
+				Position.y = TempY;
+			}
+			else
+			{
+				// 押し出し
+				Position = VAdd(Position, VScale(PushVec, CHARA_HIT_PUSH_POWER));
+			}
+		}
+	}
+}

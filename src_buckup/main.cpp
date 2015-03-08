@@ -31,7 +31,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	Goblin goblin2 = Goblin(VGet(420.0f, 0.0f, -10.0f));
 
-	std::vector<Chara> enemyVec;
+	std::vector<Enemy*> enemyVec;
+	enemyVec = { &goblin1, &goblin2 };
+	//std::vector<Enemy> enemyVec;
 	std::vector<Chara> otherVec;
 
 	int stage = MV1LoadModel("Data/stage/Stage00.mv1");
@@ -171,20 +173,46 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 		//モデル更新
 		//player.update(PlayerKeyInfo, Angle, goblin1);
-		enemyVec = { goblin1, goblin2 };
-		player.update(PlayerKeyInfo, Angle, enemyVec.data(),enemyVec.size());
-		
-		//goblin1.update(player, PlayerKeyInfo.AttackKeyPressed);
-		//goblin2.update(player, PlayerKeyInfo.AttackKeyPressed);
+		/*
+		for (int i = 0; i < enemyVec.size(); i++){
+			Enemy enem = enemyVec[i];
+			//自分以外を含む配列を作成する
+			std::vector<Chara> otherVec;
+			for (int j = 0; j < enemyVec.size(); j++){
+				//自分自身を除く
+				if (&enemyVec[j] != &enem){
+					otherVec.push_back(enemyVec[j]);
+				}
+			}
+			//配列にプレイヤーを追加
+			otherVec.push_back(player);
+
+			//敵更新
+			enem.update(player, PlayerKeyInfo.AttackKeyPressed, otherVec.data(), otherVec.size());
+		}
+		*/
+
 		otherVec = { goblin2, player };
-		goblin1.update(player, PlayerKeyInfo.AttackKeyPressed,otherVec.data(),otherVec.size());
+		//otherVec = {player };
+		goblin1.update(player, PlayerKeyInfo.AttackKeyPressed, otherVec.data(), otherVec.size());
+
 		otherVec = { goblin1, player };
 		goblin2.update(player, PlayerKeyInfo.AttackKeyPressed,otherVec.data(), otherVec.size());
-		
+		//enemyVec = { goblin1};
+		/*std::vector<Chara> tempEnemyVec;
+		for (int i = 0; i < enemyVec.size(); i++){
+			tempEnemyVec.push_back(enemyVec[i]);
+		}
+		*/
+		otherVec = { goblin1, goblin2 };
+		//enemyVec = { goblin1, goblin2 };
+		player.update(PlayerKeyInfo, Angle, otherVec.data(), otherVec.size());
 		//human.update(player, PlayerKeyInfo.AttackKeyPressed);
 		//カメラ更新
 		camera.update(player.Position, player.AttackAngle);
-		
+		Enemy hogehoge = *enemyVec[0];
+		VECTOR hogePosition = hogehoge.Position;
+
 		// ３Ｄモデルの描画
 		//ステージ描画
 		MV1DrawModel(stage);
@@ -192,6 +220,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		player.draw();
 		goblin1.draw();
 		goblin2.draw();
+		/*
+		for (int i = 0; i < enemyVec.size(); i++){
+			enemyVec[i].draw();
+		}
+		*/
 		//human.draw();
 
 		//MV1DrawModel(TestModelHandle);

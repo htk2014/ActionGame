@@ -30,9 +30,11 @@ public:
 	void setupAttack(KeyInfo KInfo, float angle);
 	void update(KeyInfo KInfo, float angle, Enemy enemy);
 	void update(KeyInfo KInfo, float angle, Chara* enemyVec, int vecSize);
+	void update(KeyInfo KInfo, float angle, std::vector<Chara> enemyVec);
 	void draw();
 	void rockOn();
 	void changeTarget(Chara* enemyVec, int EnemyMaxNum);
+	void changeTarget(std::vector<Chara> enemyVec);
 
 
 };
