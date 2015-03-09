@@ -30,6 +30,9 @@ public:
 	void draw();
 	void terminateModel();
 	void think();
+	void chase(Chara player);
+	void attack();
+	void chaseAndAttack(Chara player);
 	VECTOR getPostion();
 };
 

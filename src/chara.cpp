@@ -7,7 +7,6 @@
 LifeBar::LifeBar(){
 	DamageColor = GetColor(255, 0, 0);    // ダメージバーの色
 	HPColor = GetColor(0, 0, 255);    // HPバーの色
-	HP = 100;
 }
 
 void LifeBar::updateHP(int point){
@@ -22,9 +21,19 @@ void LifeBar::draw(){
 EnemyLifeBar::EnemyLifeBar():LifeBar(){
 	DamageColor = GetColor(255, 0, 0);    // ダメージバーの色
 	HPColor = GetColor(0, 0, 255);    // HPバーの色
-	HP = 100;
+	HP = 1000;
 	StartX = 0;
 	StartY = 0;
+	DamageGageMax = HP * 4 / 10;
+}
+
+EnemyLifeBar::EnemyLifeBar(int hp) :LifeBar(){
+	DamageColor = GetColor(255, 0, 0);    // ダメージバーの色
+	HPColor = GetColor(0, 0, 255);    // HPバーの色
+	HP = hp;
+	StartX = 0;
+	StartY = 0;
+	DamageGageMax = HP * 4 / 10;
 }
 
 void EnemyLifeBar::updateHP(int point, int startX, int startY){
@@ -34,7 +43,7 @@ void EnemyLifeBar::updateHP(int point, int startX, int startY){
 }
 
 void EnemyLifeBar::draw(){
-	DrawBox(StartX, StartY, StartX + 40, StartY + 5, DamageColor, TRUE);
+	DrawBox(StartX, StartY, StartX + DamageGageMax, StartY + 5, DamageColor, TRUE);
 	DrawBox(StartX, StartY, StartX + HP * 4/10, StartY + 5, HPColor, TRUE);
 }
 

@@ -19,8 +19,8 @@ Enemy::Enemy(
 	//MV1SetPosition(ModelHandle,Position);
 	//ShortOption = TRUE;
 	DamageSound = "Data/sound/VO_dmg_01.wav";
-	HP = 100;
-	LBar = EnemyLifeBar::EnemyLifeBar();
+	HP = 1000;
+	LBar = EnemyLifeBar(HP);
 	Chara::animInit();
 }
 
@@ -114,7 +114,9 @@ void Enemy::update(Chara player, int attackKeyPressed, std::vector<Chara> otherV
 	}
 	else{
 		//受けていなかったらランダムでアクション
-		Enemy::think();
+		//Enemy::think();
+		//chase(player);
+		chaseAndAttack(player);
 		//選択されのが攻撃なら継続アニメーションで
 		if (AttackFlag){
 			//Chara::changeAnim(AttackAnim, TRUE);
@@ -172,6 +174,35 @@ void Enemy::think(){
 	if (AnimState != NewAnimState){
 		AnimState = NewAnimState;
 		changeAnim(AnimState);
+	}
+}
+
+void Enemy::chase(Chara player){
+	Angle = 180 + (getRockOnAngle(Position, player.Position)* 180 / DX_PI_F);
+	int NewAnimState = WalkAnim;
+	if (AnimState != NewAnimState){
+		AnimState = NewAnimState;
+		changeAnim(AnimState);
+	}
+}
+
+void Enemy::attack(){
+	int NewAnimState = AttackAnim;
+	AttackFlag = TRUE;
+	if (AnimState != NewAnimState){
+		AnimState = NewAnimState;
+		changeAnim(AnimState);
+	}
+}
+
+void Enemy::chaseAndAttack(Chara player){
+	if 
+		((player.Position.x - Position.x) <= EndLocalPosition.y && 
+		 (player.Position.z - Position.z) <= EndLocalPosition.y){
+		attack();
+	}
+	else{
+		chase(player);
 	}
 }
 

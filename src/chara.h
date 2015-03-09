@@ -34,14 +34,14 @@ class EnemyLifeBar :public LifeBar{
 public:
 	int StartX;
 	int StartY;
+	int DamageGageMax;
 	EnemyLifeBar();
+	EnemyLifeBar(int hp);
 	void updateHP(int point, int startX, int startY);
 	void draw();
 };
 
 class Chara{
-private:
-
 public:
 	int ModelHandle;
 	int WeaponHandle;

@@ -33,7 +33,7 @@ Player::Player()
 	AttackAnimArray[1] = AttackAnim2;
 	AttackAnimArray[2] = AttackAnim3;
 
-	EndLocalPosition = { 0.0, -120, 0.0 };
+	EndLocalPosition = { 0.0, -150, 0.0 };
 
 	//被攻撃判定用
 	DamageHitWidth = 50.0;
@@ -42,7 +42,7 @@ Player::Player()
 
 	DamageSound = "Data/sound/dmg_byAxe_00.wav";
 
-	AttackSphereSize = 100.0;
+	AttackSphereSize = 10.0;
 	HP = 100;
 	//ライフバー
 	LBar = LifeBar::LifeBar();
@@ -220,7 +220,7 @@ void Player::update(KeyInfo KInfo, float angle, std::vector<Chara> enemyVec){
 
 	if (AttackHitted && !DamageFlag){
 		initDamageAnim();
-		HP -= 10;
+		HP -= 25;
 	}
 
 	//攻撃フラグがたっているなら攻撃を始める。または攻撃かダメージアニメーションを継続
