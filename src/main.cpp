@@ -281,13 +281,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	return 0;
 }
 
-void testEnemies(Player player, KeyInfo playerKeyInfo, Enemy* *enemyVec, int size){
-	for (int i = 0; i < size; i++){
-		Enemy enem = *enemyVec[i];
-
-	}
-}
-
 void drawEnemies(Enemy* *enemyVec, int size){
 	for (int i = 0; i < size; i++){
 		Enemy enem = *enemyVec[i];
